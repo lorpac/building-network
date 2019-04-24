@@ -24,7 +24,9 @@ The following Python packages are needed:
 
 * **Lorenza Pacini** [lorpac](https://github.com/lorpac)
 
+<!--- 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+-->
 
 ## License
 
