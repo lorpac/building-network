@@ -1,6 +1,6 @@
 # Buildings network
 
-A Jupyter Notebook to create a visualize the *Building network* of a geographical area using data from OpenStreetMaps. The *Buildings network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks.
+A Jupyter Notebook to create a visualize the *Building network* of a geographical area using data from OpenStreetMap. The *Buildings network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks.
 ## Getting Started
 
 
