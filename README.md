@@ -13,10 +13,11 @@ The following Python packages are needed:
 - [numpy](https://www.numpy.org/)
 - [matplotlib](https://matplotlib.org/)
 - [shapely](https://github.com/Toblerity/Shapely)
-
-[comment]: <>  ```
-[comment]: <>  Give examples
-[comment]: <>  ```
+<!--- 
+```
+ Give examples
+ ```
+--> 
 
 
 ## Authors
@@ -27,4 +28,6 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-[comment]: <>  This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+<!--- 
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+-->
