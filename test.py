@@ -1,5 +1,4 @@
 import osmnx as ox
-import networkx as nx
 import geopandas as gpd
 import numpy as np
 import shapely
@@ -7,7 +6,6 @@ from shapely import speedups
 print('speedup available:', speedups.available)
 if speedups.available:
     speedups.enable()
-import sec
 from edge_assigment import assign_edges
 import time
 
