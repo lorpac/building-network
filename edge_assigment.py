@@ -2,6 +2,8 @@ import pickle
 import os
 import numpy as np
 import shapely
+from copy import deepcopy
+import geopandas as gpd
 
 def pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold):
     """Defines pairwise weight between two buildings i and j.
@@ -36,15 +38,15 @@ def pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold):
     wij = area1 + area2
     return wij
 
-def assign_edges(B, distance_threshold, step=None):
+def assign_edges(B, distance_threshold=30, step=None):
     """Defines pairwise weight between two buildings i and j.
     
     Parameters
     ----------
     B : GeoPandas GeoSeries
         GeoSeries containing all buildings
-    distance_threshold : int
-        distance threshold for connection
+    distance_threshold : int, optional
+        distance threshold for connection (default is 30)
     step : int or None, optional
         size of grid to use to check buildings adjency. If None, the distance_threshold value is used (default is None)
     
@@ -83,12 +85,6 @@ def assign_edges(B, distance_threshold, step=None):
     # initialize dictionary of cells touched by each building
     Cb = {i: set() for i in range(len(B))}
 
-
-    def enclosing_rectangle(building):
-        (minx, miny, maxx, maxy) = building.bounds
-        return (minx, miny, maxx, maxy)
-
-
     def cell_of_point(x, y, step, x0, y0):
         x -= x0
         y -= y0
@@ -98,7 +94,7 @@ def assign_edges(B, distance_threshold, step=None):
 
 
     def assign_building_cells(b, index, step, x0, y0, C, Cb):
-        (minx, miny, maxx, maxy) = enclosing_rectangle(b)
+        (minx, miny, maxx, maxy) = b.bounds
         imin, jmin = cell_of_point(minx, miny, step, x0, y0)
         imax, jmax = cell_of_point(maxx, maxy, step, x0, y0)
         for i in range(imin, imax + 1):
@@ -117,30 +113,40 @@ def assign_edges(B, distance_threshold, step=None):
     for i, b_i in enumerate(B):
         node_i = nodes.iloc[i]
         neighbors = []
-        Cb_i = Cb[i]
-        for ci, cj in Cb_i:
-            potential_neighbors = C[ci][cj]
-            for cl in range(ci - k, ci + k + 1):
-                for cm in range(cj - k, cj + k + 1):
-                    if (
-                        (not (cl == ci and cm == cj))
-                        and cl < n_x
-                        and cm < n_y
-                        and cl >= 0
-                        and cm >= 0
-                    ):
-                        potential_neighbors = potential_neighbors.union(C[cl][cm])
+        Cb_i = np.array(list(Cb[i]))
+        max_i = max(Cb_i[:,0])
+        max_j = max(Cb_i[:,1])
+        min_i = min(Cb_i[:,0])
+        min_j = min(Cb_i[:,1])
 
-            for j in potential_neighbors:
-                if i != j:
-                    b_j = B[j]
-                    dist = b_i.distance(b_j)
-                    if dist < distance_threshold:
-                        edges.add((i, j))
-                        if j not in neighbors:
-                            neighbors.append(j)
-                            wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
-                            weights[(i, j)] = wij
+        potential_neighbors = set([])
+
+        for ci, cj in Cb_i:
+            potential_neighbors = potential_neighbors.union(C[ci][cj])
+        
+
+        for cl in range(min_i - k, max_i + k + 1):
+            for cm in range(min_j - k, max_j + k + 1):
+                if (
+                    (not (cl == ci and cm == cj))
+                    and cl < n_x
+                    and cm < n_y
+                    and cl >= 0
+                    and cm >= 0
+                ):
+                    potential_neighbors = potential_neighbors.union(C[cl][cm])
+
+
+        for j in potential_neighbors:
+            if i != j:
+                b_j = B[j]
+                dist = b_i.distance(b_j)
+                if dist < distance_threshold:
+                    edges.add((i, j))
+                    if j not in neighbors:
+                        neighbors.append(j)
+                        wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
+                        weights[(i, j)] = wij
         for n in neighbors:
             node_n = nodes.iloc[n]
             segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_n.coords)[0]])
