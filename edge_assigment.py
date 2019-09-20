@@ -38,15 +38,17 @@ def pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold):
     wij = area1 + area2
     return wij
 
-def assign_edges(B, distance_threshold=30, step=None):
+
+
+def assign_edges(B, distance_threshold, step=None):
     """Defines pairwise weight between two buildings i and j.
     
     Parameters
     ----------
     B : GeoPandas GeoSeries
         GeoSeries containing all buildings
-    distance_threshold : int, optional
-        distance threshold for connection (default is 30)
+    distance_threshold : int
+        distance threshold for connection
     step : int or None, optional
         size of grid to use to check buildings adjency. If None, the distance_threshold value is used (default is None)
     
@@ -116,47 +118,33 @@ def assign_edges(B, distance_threshold=30, step=None):
     # edge assignment
     edges = set([])
     weights = {}
-    Bbuff = B.geometry.buffer(distance_threshold)
     for i, b_i in enumerate(B):
         node_i = nodes.iloc[i]
         neighbors = []
-        Cb_i = np.array(list(Cb[i]))
-        max_i = max(Cb_i[:,0])
-        max_j = max(Cb_i[:,1])
-        min_i = min(Cb_i[:,0])
-        min_j = min(Cb_i[:,1])
-
-        potential_neighbors = set([])
-
+        Cb_i = Cb[i]
         for ci, cj in Cb_i:
-            potential_neighbors = potential_neighbors.union(C[ci][cj])
-        
+            potential_neighbors = C[ci][cj]
+            for cl in range(ci - k, ci + k + 1):
+                for cm in range(cj - k, cj + k + 1):
+                    if (
+                        (not (cl == ci and cm == cj))
+                        and cl < n_x
+                        and cm < n_y
+                        and cl >= 0
+                        and cm >= 0
+                    ):
+                        potential_neighbors = potential_neighbors.union(C[cl][cm])
 
-        for cl in range(min_i - k, max_i + k + 1):
-            for cm in range(min_j - k, max_j + k + 1):
-                if (
-                    (not (cl == ci and cm == cj))
-                    and cl < n_x
-                    and cm < n_y
-                    and cl >= 0
-                    and cm >= 0
-                ):
-                    potential_neighbors = potential_neighbors.union(C[cl][cm])
-
-        potential_neighbors = [p for p in potential_neighbors if p != i]
-        PotNeighBuff = gpd.GeoSeries([Bbuff[j] for j in potential_neighbors], index=potential_neighbors)
-        # PotNeighBuff = PotNeigh.geometry.buffer(distance_threshold)
-        neighbors = PotNeighBuff[~PotNeighBuff.geometry.disjoint(b_i)].index.tolist()
-
-        for j in neighbors:
-            if (j, i) in edges:
-                neighbors.remove(j)
-            else:
-                b_j = B[j]
-                wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
-                weights[(i, j)] = wij
-                edges.add((i, j))
-
+            for j in potential_neighbors:
+                if i != j and (j, i) not in edges:
+                    b_j = B[j]
+                    dist = b_i.distance(b_j)
+                    if dist < distance_threshold:
+                        edges.add((i, j))
+                        if j not in neighbors:
+                            neighbors.append(j)
+                            wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
+                            weights[(i, j)] = wij
         for n in neighbors:
             node_n = nodes.iloc[n]
             segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_n.coords)[0]])
