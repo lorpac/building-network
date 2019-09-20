@@ -149,13 +149,16 @@ def assign_edges(B, distance_threshold=30, step=None):
         neighbors = PotNeighBuff[~PotNeighBuff.geometry.disjoint(b_i)].index.tolist()
 
         for j in neighbors:
-            b_j = B[j]
-            wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
-            weights[(i, j)] = wij
-            edges.add((i, j))
+            if (j, i) in edges:
+                neighbors.remove(j)
+            else:
+                b_j = B[j]
+                wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
+                weights[(i, j)] = wij
+                edges.add((i, j))
 
         for n in neighbors:
-            node_n = nodes.iloc[j]
+            node_n = nodes.iloc[n]
             segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_n.coords)[0]])
             stop = False
             for q in neighbors[n+1::]:

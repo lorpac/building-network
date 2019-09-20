@@ -14,7 +14,7 @@ import time
 point_coords = (45.745591, 4.871167) # latitude and longitude of Montplaisir-Lumière, Lyon (France)
 distance = 1000 # in meters
 buffer = 0.01 # 1 cm
-
+distance_threshold = 30
 
 print("loading buildings...")
 B = ox.buildings_from_point(point_coords, distance=distance)
@@ -46,5 +46,6 @@ nodes = B.centroid
 
 print('assigning edges...')
 t1 = time.time()
-edges1, weights1 = assign_edges(B)
+edges, weights = assign_edges(B, distance_threshold)
 print('finished assigning edges in %s seconds' %(time.time() - t1))
+
