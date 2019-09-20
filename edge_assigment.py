@@ -85,6 +85,12 @@ def assign_edges(B, distance_threshold=30, step=None):
     # initialize dictionary of cells touched by each building
     Cb = {i: set() for i in range(len(B))}
 
+
+    def enclosing_rectangle(building):
+        (minx, miny, maxx, maxy) = building.bounds
+        return (minx, miny, maxx, maxy)
+
+
     def cell_of_point(x, y, step, x0, y0):
         x -= x0
         y -= y0
@@ -94,7 +100,7 @@ def assign_edges(B, distance_threshold=30, step=None):
 
 
     def assign_building_cells(b, index, step, x0, y0, C, Cb):
-        (minx, miny, maxx, maxy) = b.bounds
+        (minx, miny, maxx, maxy) = enclosing_rectangle(b)
         imin, jmin = cell_of_point(minx, miny, step, x0, y0)
         imax, jmax = cell_of_point(maxx, maxy, step, x0, y0)
         for i in range(imin, imax + 1):
@@ -110,6 +116,7 @@ def assign_edges(B, distance_threshold=30, step=None):
     # edge assignment
     edges = set([])
     weights = {}
+    Bbuff = B.geometry.buffer(distance_threshold)
     for i, b_i in enumerate(B):
         node_i = nodes.iloc[i]
         neighbors = []
@@ -136,19 +143,19 @@ def assign_edges(B, distance_threshold=30, step=None):
                 ):
                     potential_neighbors = potential_neighbors.union(C[cl][cm])
 
+        potential_neighbors = [p for p in potential_neighbors if p != i]
+        PotNeighBuff = gpd.GeoSeries([Bbuff[j] for j in potential_neighbors], index=potential_neighbors)
+        # PotNeighBuff = PotNeigh.geometry.buffer(distance_threshold)
+        neighbors = PotNeighBuff[~PotNeighBuff.geometry.disjoint(b_i)].index.tolist()
 
-        for j in potential_neighbors:
-            if i != j:
-                b_j = B[j]
-                dist = b_i.distance(b_j)
-                if dist < distance_threshold:
-                    edges.add((i, j))
-                    if j not in neighbors:
-                        neighbors.append(j)
-                        wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
-                        weights[(i, j)] = wij
+        for j in neighbors:
+            b_j = B[j]
+            wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
+            weights[(i, j)] = wij
+            edges.add((i, j))
+
         for n in neighbors:
-            node_n = nodes.iloc[n]
+            node_n = nodes.iloc[j]
             segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_n.coords)[0]])
             stop = False
             for q in neighbors[n+1::]:
