@@ -4,7 +4,7 @@ A Jupyter Notebook to create a visualize the *Building network* of a geographica
 ## Getting Started
 
 
-### Prerequisites
+### Requirements
 
 The following Python packages are needed:
 - [osmnx](https://github.com/gboeing/osmnx )
@@ -13,12 +13,8 @@ The following Python packages are needed:
 - [numpy](https://www.numpy.org/)
 - [matplotlib](https://matplotlib.org/)
 - [shapely](https://github.com/Toblerity/Shapely)
-<!--- 
-```
- Give examples
- ```
---> 
 
+See `requirements.txt` for details about the required versions of the packages and of their dependencies.
 
 ## Authors
 
