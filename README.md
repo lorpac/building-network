@@ -6,7 +6,7 @@ A Jupyter Notebook to create a visualize the *Building network* of a geographica
 
 ### Requirements
 
-[Jupyter](https://jupyter.org/) is needed in order to run the `Buildings_metwork.ipynb` notebook and the following Python packages are needed:
+[Jupyter](https://jupyter.org/) is needed in order to run the `Buildings_network.ipynb` notebook and the following Python packages are needed:
 - [OSMnx](https://github.com/gboeing/osmnx )
 - [networkx](https://networkx.github.io/)
 - [geopandas](http://geopandas.org/)
