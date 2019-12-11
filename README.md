@@ -60,7 +60,7 @@ For other operating systems, or if you encounter problems, please follow the ins
 
 
 ### Note for Windows users
-Jupyter notebooks seems to raise problems when using Python 3.8 on Windows, due to the `tornado` server that it uses (see for example [here](https://stackoverflow.com/questions/58422817/jupyter-notebook-with-python-3-8-notimplementederror)). It is recommended to downgrade your Python and tornado versions:
+Jupyter seems to raise problems when using Python 3.8 on Windows, due to the `tornado` server that it uses (see for example [here](https://stackoverflow.com/questions/58422817/jupyter-notebook-with-python-3-8-notimplementederror)). It is recommended to downgrade your Python and tornado versions:
 ```
 conda install python=3.6.7
 conda install tornado=4.5.3
