@@ -119,43 +119,54 @@ def assign_edges(B, distance_threshold, step=None):
     edges = set([])
     weights = {}
     for i, b_i in enumerate(B):
-        node_i = nodes.iloc[i]
+        node_i = nodes[i]
         neighbors = []
-        Cb_i = Cb[i]
-        for ci, cj in Cb_i:
-            potential_neighbors = C[ci][cj]
-            for cl in range(ci - k, ci + k + 1):
-                for cm in range(cj - k, cj + k + 1):
-                    if (
-                        (not (cl == ci and cm == cj))
-                        and cl < n_x
-                        and cm < n_y
-                        and cl >= 0
-                        and cm >= 0
-                    ):
-                        potential_neighbors = potential_neighbors.union(C[cl][cm])
+        # Cb_i = Cb[i]
+        Cb_i = np.array(list(Cb[i]))
+        max_i = max(Cb_i[:,0])
+        max_j = max(Cb_i[:,1])
+        min_i = min(Cb_i[:,0])
+        min_j = min(Cb_i[:,1])
 
-            for j in potential_neighbors:
-                if i != j and (j, i) not in edges:
-                    b_j = B[j]
-                    dist = b_i.distance(b_j)
-                    if dist < distance_threshold:
-                        edges.add((i, j))
-                        if j not in neighbors:
-                            neighbors.append(j)
-                            wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
-                            weights[(i, j)] = wij
-        for n in neighbors:
-            node_n = nodes.iloc[n]
-            segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_n.coords)[0]])
-            stop = False
-            for q in neighbors[n+1::]:
-                if not stop:
-                    b_q = B.iloc[q]
+        potential_neighbors = set([])
+
+        for ci, cj in Cb_i:
+            potential_neighbors = potential_neighbors.union(C[ci][cj])
+        
+        for cl in range(min_i - k, max_i + k + 1):
+            for cm in range(min_j - k, max_j + k + 1):
+                if (
+                    (not (cl == ci and cm == cj))
+                    and cl < n_x
+                    and cm < n_y
+                    and cl >= 0
+                    and cm >= 0
+                ):
+                    potential_neighbors = potential_neighbors.union(C[cl][cm])
+
+        potential_neighbors_reduced = []
+        for j in potential_neighbors:
+            if i != j:
+                b_j = B[j]
+                dist = b_i.distance(b_j)
+                if dist < distance_threshold:
+                    potential_neighbors_reduced.append(j)
+
+        for j in potential_neighbors_reduced:
+            b_j = B[j]
+            node_j = nodes[j]
+            segment = shapely.geometry.LineString([list(node_i.coords)[0], list(node_j.coords)[0]])
+            valid = True
+            for q in potential_neighbors_reduced:
+                if q == j: continue
+                elif valid:
+                    b_q = B[q]
                     if not b_q.intersection(segment).is_empty:
-                        edges.remove((i, n))
-                        weights.pop((i, n))
-                        stop = True
-                else: break
+                        valid = False
+                        break
+            if valid and (j, i) not in edges:
+                edges.add((i, j))
+                wij = pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold)
+                weights[(i, j)] = wij
 
     return edges, weights
