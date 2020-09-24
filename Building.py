@@ -14,24 +14,39 @@ if speedups.available:
 import sec
 from edge_assigment import assign_edges
 import os
+import json
+from copy import deepcopy
 
 plt.ioff()
 
 class Building():
     
-    def __init__(self, point_coords=None, place_name=None, distance=1000):
-        # gpd.geodataframe.GeoDataFrame.__init__(self)
-        self.point_coords = point_coords
-        self.place_name = place_name
-        if self.point_coords:
-            self.distance = distance
+    def __init__(self, config_file=None, point_coords=None, place_name=None, distance=1000, distance_threshold=30):
+
+        def load_config(filename):
+            with open(filename) as f:
+                config = json.load(f)
+            return config
+
+        if config_file:
+            config = load_config(config_file)
+            self.__dict__ = config
+        else:
+            self.point_coords = point_coords
+            self.place_name = place_name
+            if self.point_coords:
+                self.distance = distance
+            self.distance_threshold = distance_threshold
+        self.config = deepcopy(self)
         self.is_downloaded = False
         self.is_merged = False
         self.nodes_assigned = False
         self.edges_assigned = False
         self.net_assigned = False
 
-            
+    def save_config(self, filename="config.json"):
+        with open(filename, 'w') as file:
+            json.dump(self.config.__dict__, file, indent=4)
 
     def download_buildings(self):
         if self.point_coords:
@@ -92,7 +107,8 @@ class Building():
         self.nodes_df = gpd.GeoDataFrame(col, geometry=[build for build in self.buildings] + [node for node in self.nodes], columns=['color'])
         self.nodes_assigned = True
 
-    def assign_edges_weights(self, distance_threshold=30):
+    def assign_edges_weights(self):
+        distance_threshold = self.distance_threshold 
         if not self.is_merged:
             raise Exception("Please run merge_and_convex() before.")
         self.edges, self.weights = assign_edges(self.buildings, distance_threshold=distance_threshold)
