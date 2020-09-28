@@ -1,49 +1,61 @@
-import osmnx as ox
-import geopandas as gpd
-import numpy as np
-import shapely
-from shapely import speedups
-print('speedup available:', speedups.available)
-if speedups.available:
-    speedups.enable()
-from edge_assigment import assign_edges
+from Building import Building
 import time
+import os
+import matplotlib as mpl
+mpl.use('Agg') # avoid opening pf buildings figure
 
-point_coords = (45.745591, 4.871167) # latitude and longitude of Montplaisir-Lumière, Lyon (France)
+t0 = time.time()
+
+point_coords = (45.7394953462566, 4.93414878132277)
 distance = 1000 # in meters
 buffer = 0.01 # 1 cm
 distance_threshold = 30
+output_folder = "test_output"
+os.makedirs(output_folder, exist_ok=True)
 
-print("loading buildings...")
-B = ox.buildings_from_point(point_coords, distance=distance)
-print("buildings loaded.")
+B = Building(point_coords, distance=distance)
 
-B = ox.project_gdf(B) # pass from angular (lat, long) coords to planar coords
-B = B.geometry.buffer(buffer)
-
-def merge_and_convex(df):
-    go = True
-    length = len(df)
-    i = 0
-    print(i, length)
-    while go:
-        i += 1
-        df = gpd.GeoDataFrame(geometry=list(df.unary_union)).convex_hull
-        print(i, len(df))
-        if len(df) == length:
-            go = False
-        else:
-            length = len(df)
-    return df
-
-print('merging...')
-B = merge_and_convex(B)
-print('finished merging')
-
-nodes = B.centroid
-
-print('assigning edges...')
 t1 = time.time()
-edges, weights = assign_edges(B, distance_threshold)
-print('finished assigning edges in %s seconds' %(time.time() - t1))
+print("loading buildings...")
+B.download_buildings()
+print("buildings loaded in %s seconds" %(time.time() - t1))
+t1 = time.time()
+B.plot_buildings(imgs_folder=output_folder, show=False)
+print("plotted buildings %s seconds" %(time.time() - t1))
+
+t1 = time.time()
+print("merging...")
+B.merge_and_convex(buffer=buffer)
+print("finished merging in %s seconds" %(time.time() - t1))
+t1 = time.time()
+B.plot_merged_buildings(imgs_folder=output_folder, show=False)
+print("plotted merged buildings %s seconds" %(time.time() - t1))
+
+t1 = time.time()
+print("assigning nodes...")
+B.assign_nodes()
+print("finished assigning nodes in %s seconds" %(time.time() - t1))
+t1 = time.time()
+B.plot_nodes(imgs_folder=output_folder, show=False)
+print("plotted nodes %s seconds" %(time.time() - t1))
+
+t1 = time.time()
+print("assigning edges...")
+B.assign_edges_weights(distance_threshold=distance_threshold)
+print("finished assigning edges in %s seconds" %(time.time() - t1))
+t1 = time.time()
+B.plot_edges(imgs_folder=output_folder, show=False)
+print("plotted edges %s seconds" %(time.time() - t1))
+
+t1 = time.time()
+print("assigning network...")
+B.assign_network()
+print("finished assigning network...in %s seconds" %(time.time() - t1))
+t1 = time.time()
+B.plot_net(imgs_folder=output_folder, show=False)
+print("plotted network %s seconds" %(time.time() - t1))
+
+print("total execution time: %s seconds" %(time.time() - t0))
+
+
 

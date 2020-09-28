@@ -21,7 +21,7 @@ plt.ioff()
 
 class Building():
     
-    def __init__(self, config_file=None, point_coords=None, place_name=None, distance=1000, distance_threshold=30):
+    def __init__(self, point_coords=None, config_file=None, place_name=None, distance=1000, distance_threshold=30):
 
         def load_config(filename):
             with open(filename) as f:
@@ -57,13 +57,16 @@ class Building():
             self.buildings = ox.project_gdf(self.buildings)
         self.is_downloaded = True
     
-    def plot_buildings(self, fc='black', ec='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300):
+    def plot_buildings(self, fc='black', ec='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building. Please use plot_merged_buildings()")
         fig, ax = ox.plot_shape(self.buildings, fc=fc, ec=ec, figsize=figsize)
         if save:
             ox.settings.imgs_folder = imgs_folder
-            ox.save_and_show(fig, ax, save=True, show=False, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
+            ox.save_and_show(fig, ax, save=True, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
+        elif show:
+            ox.settings.imgs_folder = imgs_folder
+            ox.save_and_show(fig, ax, save=False, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
         plt.close()
     
     def merge_and_convex(self, buffer=0.01):
@@ -107,8 +110,11 @@ class Building():
         self.nodes_df = gpd.GeoDataFrame(col, geometry=[build for build in self.buildings] + [node for node in self.nodes], columns=['color'])
         self.nodes_assigned = True
 
-    def assign_edges_weights(self):
-        distance_threshold = self.distance_threshold 
+    def assign_edges_weights(self, distance_threshold=None):
+        if distance_threshold:
+             self.distance_threshold = distance_threshold
+        else:
+            distance_threshold = self.distance_threshold 
         if not self.is_merged:
             raise Exception("Please run merge_and_convex() before.")
         self.edges, self.weights = assign_edges(self.buildings, distance_threshold=distance_threshold)
