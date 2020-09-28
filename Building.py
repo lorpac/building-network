@@ -57,7 +57,7 @@ class Building():
             self.buildings = ox.project_gdf(self.buildings)
         self.is_downloaded = True
     
-    def plot_buildings(self, fc='black', ec='gray', figsize=(10, 10), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300):
+    def plot_buildings(self, fc='black', ec='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building. Please use plot_merged_buildings()")
         fig, ax = ox.plot_shape(self.buildings, fc=fc, ec=ec, figsize=figsize)
@@ -86,7 +86,7 @@ class Building():
         self.is_merged = True
         self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
 
-    def plot_merged_buildings(self, color='lightgray', edgecolor='black', figsize=(10, 10), save=True, imgs_folder = ".temp", filename="merged", file_format='png', show=True):
+    def plot_merged_buildings(self, color='lightgray', edgecolor='black', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="merged", file_format='png', show=True):
         if not self.is_merged:
             raise Exception("Please run merge_and_convex() before.")
         self.buildings.plot(figsize=figsize, color=color, edgecolor=edgecolor)
@@ -127,7 +127,7 @@ class Building():
                             [node for node in self.nodes], columns=['color'])
         self.edges_assigned = True
     
-    def plot_nodes(self, figsize=(10, 10), colors=['lightgray', 'black'], markersize=0.1, save=True, imgs_folder = ".temp", filename="nodes", file_format='png', show=True):
+    def plot_nodes(self, figsize=(30, 30), colors=['lightgray', 'black'], markersize=0.1, save=True, imgs_folder = ".temp", filename="nodes", file_format='png', show=True):
         cm = ListedColormap(colors, N=len(colors))
         self.nodes_df.plot(figsize=figsize, column='color', markersize=markersize, cmap=cm)
         plt.axis('off')
@@ -139,7 +139,7 @@ class Building():
             plt.show()
         plt.close()
 
-    def plot_edges(self, figsize=(10, 10), colors=['lightgray', 'black'], markersize=1, linewidth=0.5, save=True, imgs_folder = ".temp", filename="edges", file_format='png', show=True):
+    def plot_edges(self, figsize=(30, 30), colors=['lightgray', 'black'], markersize=1, linewidth=0.5, save=True, imgs_folder = ".temp", filename="edges", file_format='png', show=True):
         cm = ListedColormap(colors, N=len(colors))
         self.edges_df.plot(figsize=figsize, column='color', markersize=markersize, linewidth=linewidth, cmap=cm)
         plt.axis('off')
