@@ -1,5 +1,13 @@
 .vscode
 .ipynb_checkpoints
+.env
 __pycache__
 test_output/
 results/
+output_notebook/
+.temp
+.RData
+.Rhistory
+.Rproj.user
+TODO.txt
+www/.temp/
