@@ -42,14 +42,14 @@ conda env create -n cityenv
 conda activate cityenv
 ```
 
-####  1.1.2. <a name='MacOSorLinux:'></a>MacOS or Linux
+####  1.1.2. <a name='MacOSorLinux'></a>MacOS or Linux
 ```
 pip3 install virtualenv
 python3 -m virtualenv .env
 source .env/bin/activate
 ```
 ###  1.2. <a name='Compulsory-Pythonrequirements'></a>Compulsory - Python requirements
-####  1.2.1. <a name='Windows:'></a>Windows
+####  1.2.1. <a name='Windows'></a>Windows
 Due to geopandas installation requirement, installing with conda is required on Windows.
 
 The OSMnx dependency [rtree](https://pypi.org/project/Rtree/) requires the [libspatialindex](https://libspatialindex.org/) library. If you don't have it installed, please follow the instructions [here](https://github.com/libspatialindex/libspatialindex/wiki/1.-Getting-Started).
@@ -93,7 +93,7 @@ Then, install OSMnx and it dependencies using pip:
 pip install -r requirements.txt
 ```
 
-####  1.2.3. <a name='Alloperatingsystems:'></a>All operating systems
+####  1.2.3. <a name='Alloperatingsystems'></a>All operating systems
 You also need to have LaTex installed on your system in order to produce the plots with Matplotlib. On Ubuntu, you can install LaTex and the necessary extensions by running
 
 ```
