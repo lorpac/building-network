@@ -3,6 +3,7 @@
 .env
 __pycache__
 test_output/
+test_city_output/
 results/
 output_notebook/
 .temp

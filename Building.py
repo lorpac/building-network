@@ -16,6 +16,7 @@ from edge_assigment import assign_edges
 import os
 import json
 from copy import deepcopy
+import imageio
 
 plt.ioff()
 
@@ -69,7 +70,7 @@ class Building():
             ox.save_and_show(fig, ax, save=False, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
         plt.close()
     
-    def merge_and_convex(self, buffer=0.01, plot=False, imgs_folder=".temp", show=True, save=True, figsize=(30,30)):
+    def merge_and_convex(self, buffer=0.01):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building.")
 
@@ -77,9 +78,7 @@ class Building():
         go = True
         length = len(self.buildings)
         i = 0
-        if plot:
-            output_folder = os.path.join(imgs_folder, "merging_intermediates")
-            self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
+        self.merging_intermediates = [deepcopy(self)]
         print(i, length)
         while go:
             i += 1
@@ -88,12 +87,35 @@ class Building():
             if len(self.buildings) == length:
                 go = False
             else:
-                if plot:
-                    self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
+                self.merging_intermediates.append(deepcopy(self))
                 length = len(self.buildings)
         self.is_merged = True
         self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
 
+    def plot_merging_intermediates(self, imgs_folder=".temp", show=True, save=True, figsize=(30,30)):
+        if not self.is_merged:
+            print("merge_and_convex() had not be performed. merge_and_convex() is now being called.")
+            self.merge_and_convex()
+        output_folder = os.path.join(imgs_folder, "merging_intermediates")
+        for i, b in enumerate(self.merging_intermediates):
+            b.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
+
+    def create_gif_merging(self, imgs_folder=".temp", fps=2, figsize=(30,30), filename='merging'):
+        input_folder = os.path.join(imgs_folder, "merging_intermediates")
+        try:
+            os.listdir(input_folder)
+        except FileNotFoundError:
+            plot_merging_intermediates(imgs_folder=imgs_folder, figsize=figsize, show=False)
+        
+        filenames = [os.path.join(input_folder, f) for f in sorted(os.listdir(input_folder), key= lambda x: int(x.split(".")[0]))]
+        output_file = os.path.join(imgs_folder, filename + ".gif")
+
+        with imageio.get_writer(output_file, mode='I', fps=fps) as writer:
+            for f in filenames:
+                image = imageio.imread(f)
+                writer.append_data(image)
+        
+    
     def plot_merged_buildings(self, color='lightgray', edgecolor='black', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="merged", file_format='png', show=True):
         self.buildings.plot(figsize=figsize, color=color, edgecolor=edgecolor)
         plt.axis('off')

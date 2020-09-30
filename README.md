@@ -75,6 +75,11 @@ conda install pip
 pip install osmnx
 ```
 
+and finally install `imageio`, required to produce a GIF of the buildings merging intermediates:
+```
+conda install imageio
+```
+
 ####  1.2.2. <a name='Linux:'></a>Linux
 
 The OSMnx dependency [rtree](https://pypi.org/project/Rtree/) requires the [libspatialindex](https://libspatialindex.org/) library, that is not installed automatically. If you don't have it installed, please run:
@@ -88,7 +93,7 @@ You also need to install libgeos, that is required by Shapely. You can do so wit
 sudo apt-get install libgeos-dev
 ```
 
-Then, install OSMnx and it dependencies using pip:
+Then, install OSMnx and it dependencies and  `imageio`, required to produce a GIF of the buildings merging intermediates, using pip:
 ```
 pip install -r requirements.txt
 ```

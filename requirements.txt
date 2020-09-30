@@ -8,3 +8,4 @@ requests==2.22.0
 Rtree==0.9.3
 Shapely==1.6.4.post2
 osmnx==0.11
+imageio==2.9.0
