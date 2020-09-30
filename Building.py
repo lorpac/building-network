@@ -236,8 +236,8 @@ class Building():
     def plot_net(self, figsize=(30, 30), save=True, imgs_folder = ".temp", filename="net", file_format='png', show=True, style="node_color"):
         
         G = self.network
-        
-        weights_values = [self.weights[(u, v)] for u, v in G.edges]
+        weights = self.weights
+        weights_values = [weights[(u, v)] if (u, v) in weights else weights[(v, u)] for u, v in G.edges]
         
         fig, ax  = plt.subplots(figsize=figsize)
         base = self.buildings_df.plot(ax=ax, color='gray', alpha=0.2)
