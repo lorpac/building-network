@@ -1,20 +1,20 @@
-# Buildings network
+# Building network
 
-A Jupyter Notebook and a R Shiny app to create a visualize the *Building network* of a geographical area using data from OpenStreetMap. The *Buildings network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks.
+A Jupyter Notebook and a R Shiny app to create a visualize the *Building network* of a geographical area using data from OpenStreetMap. The *Building network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks.
 
-- the [R Shiny app](https://github.com/lorpac/building-network/blob/master/app.R) allows you to create the Buildings Network of an area of 2kmx2km size around a geographical point.
-- the [Jupyter notebook](https://github.com/lorpac/building-network/blob/master/Buildings_network.ipynb) allows you to create the Buildings Network of an area of the size of your choice around a geographical point, or the the Buildings Network of an entire city.
+- the [R Shiny app](https://github.com/lorpac/building-network/blob/master/app.R) allows you to create the Building Network of an area of 2kmx2km size around a geographical point.
+- the [Jupyter notebook](https://github.com/lorpac/building-network/blob/master/Buildings_network.ipynb) allows you to create the Building Network of an area of the size of your choice around a geographical point, or the the Building Network of an entire city.
 
 ## Table of contents
 <!-- vscode-markdown-toc -->
 * 1. [Requirements](#Requirements)
 	* 1.1. [Optional - Use a Python virtual environment](#Optional-UseaPythonvirtualenvironment)
 		* 1.1.1. [Windows](#Windows)
-		* 1.1.2. [MacOS or Linux](#MacOSorLinux:)
+		* 1.1.2. [MacOS or Linux](#MacOSorLinux)
 	* 1.2. [Compulsory - Python requirements](#Compulsory-Pythonrequirements)
 		* 1.2.1. [Windows](#Windows)
 		* 1.2.2. [Linux](#Linux)
-		* 1.2.3. [All operating systems](#Alloperatingsystems:)
+		* 1.2.3. [All operating systems](#Alloperatingsystems)
 	* 1.3. [Requirements for the Jupyter notebook](#RequirementsfortheJupyternotebook)
 		* 1.3.1. [Note for Windows users](#NoteforWindowsusers)
 	* 1.4. [Requirements for the R Shiny app](#RequirementsfortheRShinyapp)
@@ -155,17 +155,17 @@ Alternatively, you can launch the app directly from your console with the follow
 ```
 R -e "shiny::runApp('~/buildings_network_app/app.R')"
 ```
-(substitute `~/buildings_network_app/` with your path to the app, if you haven't cloned `buildings_network_app` to your `home/` folder).
+(substitute `~/building-network_app/` with your path to the app, if you haven't cloned `building-network` to your `home/` folder).
 
 ####  1.5.2. <a name='CreateyourBuildingNetwork'></a>Create your Building Network
 -  You can give your job a name using the **Job name** field. The default job name is *BuildingsNetwork*.
 - Move the blue square in the map to select the area of interest and click the button **Run**. Alternatively, you can directly insert the geographical coordinates of the center of your are of interest in the (Latitude, Longitude) boxes and click the button **Run**. It is also possible to search for places by clicking on the magnifying glass icon in the map.
  
-The area used for the creation of the Buildings Network is a 2km x 2km square.
+The area used for the creation of the Building Network is a 2km x 2km square.
 
 ####  1.5.3. <a name='Retrievetheresults'></a>Retrieve the results
 
-- If **Save results** is checked before running the analysis (that's the default behavior), you will find a copy of the produced pictures (buildings footprint, merged buildings, Buildings Network, colored network), together with a text file containing the values of the input coordinates (center of the square area), in a subdirectory of the  `results/` folder, named from the job name and the day and time at which the analysis was run.
+- If **Save results** is checked before running the analysis (that's the default behavior), you will find a copy of the produced pictures (buildings footprint, merged buildings, Building Network, colored network), together with a text file containing the values of the input coordinates (center of the square area), in a subdirectory of the  `results/` folder, named from the job name and the day and time at which the analysis was run.
 - You can also download the results by clicking on **Download** once the calculation has finished.
 
 
@@ -177,4 +177,4 @@ The area used for the creation of the Buildings Network is a 2km x 2km square.
 
 ##  3. <a name='Knownissuesworkinprogress'></a>Known issues (work in progress!)
 
-- In the R Shiny app, the blue square in the map is deformed at latitudes far from the European latitude. However, this does not impact the shape of the area that is actually considered for the creation of the Buildings Network, it remains a 2km x 2km squared area centered around the center of the (deformed) square.
+- In the R Shiny app, the blue square in the map is deformed at latitudes far from the European latitude. However, this does not impact the shape of the area that is actually considered for the creation of the Building Network, it remains a 2km x 2km squared area centered around the center of the (deformed) square.
