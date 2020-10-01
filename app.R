@@ -63,7 +63,8 @@ ui <- fluidPage(
       style = box_style ,
       h4("Download buildings"),
       br(),
-      imageOutput(outputId = "buildings")
+      imageOutput(outputId = "buildings"),
+      br()
     )
   ),
   column(
@@ -72,7 +73,11 @@ ui <- fluidPage(
       style = box_style,
       h4("Merge buildings"),
       br(),
-      imageOutput(outputId = "merged")
+      imageOutput(outputId = "merged"),
+      radioButtons("merging_plot_type", "", c("Final" = "final",
+                                              "Animation" = "animation"),
+                                              selected = "final", inline=TRUE),
+      br()
     )
   ),
   
@@ -82,7 +87,8 @@ ui <- fluidPage(
       style = box_style,
       h4("Assign nodes"),
       br(),
-      imageOutput(outputId = "nodes")
+      imageOutput(outputId = "nodes"),
+      br()
     )
   )),
   br(),
@@ -92,7 +98,8 @@ ui <- fluidPage(
       style = box_style,
       h4("Assign edges"),
       br(),
-      imageOutput(outputId = "edges")
+      imageOutput(outputId = "edges"),
+      br()
     )
   ),
   column(
@@ -101,7 +108,8 @@ ui <- fluidPage(
       style = box_style,
       h4("Create the Buildings Network"),
       br(),
-      imageOutput(outputId = "net")
+      imageOutput(outputId = "net"),
+      br()
     )
   ),
   column(
@@ -110,7 +118,8 @@ ui <- fluidPage(
       style = box_style,
       h4("Color Buildings"),
       br(),
-      imageOutput(outputId = "colored_buildings")
+      imageOutput(outputId = "colored_buildings"),
+      br()
     )
   )),
   br(),
@@ -215,6 +224,7 @@ server <- function(input, output, session) {
          alt = 'Merged buildings',
          height = '100%')
   }, deleteFile = FALSE)
+  
   
   output$nodes = renderImage({
     list(src = rv$nodes_src,
@@ -339,6 +349,17 @@ server <- function(input, output, session) {
   }
   , ignoreInit = TRUE)
   
+  observeEvent(input$merging_plot_type, {
+    if (input$merging_plot_type == "animation") {
+      rv$merge_src <- paste0(imgs_folder, "/merging.gif")
+    }
+    else {
+      rv$merge_src <- paste0(imgs_folder, "/merged.png")
+    }
+  }, ignoreInit = TRUE)
+
+
+
   output$downloadData <- downloadHandler(filename <- function() {
     paste(rv$folder_name, "tar", sep = ".")
   },
