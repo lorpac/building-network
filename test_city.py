@@ -24,15 +24,11 @@ print("plotted buildings in %.2f seconds" %(time.time() - t1))
 
 t1 = time.time()
 print("merging...")
-B.merge_and_convex(buffer=buffer)
+B.plot_merged_buildings(imgs_folder=output_folder, show=False)
 print("finished merging in %.2f seconds" %(time.time() - t1))
 t1 = time.time()
 B.plot_merged_buildings(imgs_folder=output_folder, show=False)
 print("plotted merged buildings in %.2f seconds" %(time.time() - t1))
-
-t1 = time.time()
-B.plot_merging_intermediates(imgs_folder=output_folder, show=False)
-print("plotted merged buildings intermediates in %.2f seconds" %(time.time() - t1))
 
 
 t1 = time.time()

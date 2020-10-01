@@ -70,7 +70,7 @@ class Building():
             ox.save_and_show(fig, ax, save=False, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
         plt.close()
     
-    def merge_and_convex(self, buffer=0.01):
+    def merge_and_convex(self, buffer=0.01, plot=False, imgs_folder=".temp", show=True, save=True, figsize=(30,30)):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building.")
 
@@ -78,7 +78,9 @@ class Building():
         go = True
         length = len(self.buildings)
         i = 0
-        self.merging_intermediates = [deepcopy(self)]
+        if plot:
+            output_folder = os.path.join(imgs_folder, "merging_intermediates")
+            self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
         print(i, length)
         while go:
             i += 1
@@ -87,7 +89,8 @@ class Building():
             if len(self.buildings) == length:
                 go = False
             else:
-                self.merging_intermediates.append(deepcopy(self))
+                if plot:
+                    self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
                 length = len(self.buildings)
         self.is_merged = True
         self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
