@@ -64,3 +64,8 @@ B.plot_buildings_color(imgs_folder=output_folder, show=False)
 print("plotted colored buildings in %.2f seconds" %(time.time() - t1))
 
 print("total execution time: %.2f seconds" %(time.time() - t0))
+
+
+B2 = Building.generate(load=True, filepath=os.path.join(output_folder, "test.p"))
+print("Loaded")
+print(B2.point_coords)

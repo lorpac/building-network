@@ -17,10 +17,18 @@ import os
 import json
 from copy import deepcopy
 import imageio
+import pickle
 
 plt.ioff()
 
 class Building():
+
+    @staticmethod
+    def generate(load=False, filepath=".temp/B.p", point_coords=None, config_file=None, place_name=None, distance=1000, distance_threshold=30):
+        if load:
+            return pickle.load(open(filepath, "rb"))
+        else:
+            return Building(point_coords=point_coords, config_file=config_file, place_name=place_name, distance=distance, distance_threshold=distance_threshold)
     
     def __init__(self, point_coords=None, config_file=None, place_name=None, distance=1000, distance_threshold=30):
 
@@ -373,3 +381,6 @@ class Building():
         if show:
             plt.show()
         plt.close()
+
+    def dump(self, filepath=".temp/B.p"):
+        pickle.dump(self, open(filepath, "wb"))

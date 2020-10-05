@@ -65,5 +65,12 @@ print("plotted colored buildings in %.2f seconds" %(time.time() - t1))
 
 print("total execution time: %.2f seconds" %(time.time() - t0))
 
+B.dump(filepath=os.path.join(output_folder, "test.p"))
+print("Dumped.")
+
+B2 = Building.generate(load=True, filepath=os.path.join(output_folder, "test.p"))
+print("Loaded")
+print(B2.point_coords)
+
 
 
