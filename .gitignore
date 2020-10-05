@@ -2,6 +2,8 @@
 .ipynb_checkpoints
 .env
 __pycache__
+status
+merging_status
 test_output/
 test_city_output/
 results/
