@@ -25,8 +25,9 @@ B.download_buildings()
 B.plot_buildings(imgs_folder=results_folder)
 update_status(1)
 
-B.merge_and_convex(plot=True, imgs_folder=results_folder)
+B.merge_and_convex(plot=True, imgs_folder=results_folder, status_to_file=True)
 B.plot_merged_buildings(imgs_folder=results_folder)
+B.create_gif_merging(imgs_folder=results_folder)
 update_status(2)
 
 B.assign_nodes()

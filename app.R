@@ -262,6 +262,7 @@ server <- function(input, output, session) {
     
     
     
+    
     if (status == 0) {
       rv$download_src = "www/placeholder.png"
       rv$merge_src = "www/placeholder.png"
@@ -277,12 +278,24 @@ server <- function(input, output, session) {
                                rv$date,
                                "-",
                                rv$time)
+      
     }
+    
+    
     
     if (status > 0) {
       rv$download_src = paste0(imgs_folder, "/buildings.png")
       rv$status_text = "Merging buildings..."
+      rv$merging_status = reactiveFileReader(100, session, "merging_status", readLines)
+      
+      observeEvent(rv$merging_status(), {
+        merging_status = strtoi(isolate({
+          rv$merging_status()
+        }))
+        rv$merge_src = paste0(imgs_folder, "/merging_intermediates/", merging_status, ".png")
+      }, ignoreInit = TRUE)
     }
+    
     if (status > 1) {
       rv$merge_src = paste0(imgs_folder, "/merged.png")
       rv$status_text = "Assigning nodes..."
@@ -302,6 +315,8 @@ server <- function(input, output, session) {
     if (status > 5) {
       rv$buildings_color_src = paste0(imgs_folder, "/buildings_color.png")
       rv$status_text = "Finished."
+      
+      
       rv$file_list <- list.files(imgs_folder)
       rv$file_paths <-
         to_vec(for (f in rv$file_list)
