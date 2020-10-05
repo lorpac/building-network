@@ -153,7 +153,7 @@ If you use [RStudio](https://rstudio.com/products/rstudio/download/):
 
 Alternatively, you can launch the app directly from your console with the following command:
 ```
-R -e "shiny::runApp('~/buildings_network_app/app.R')"
+R -e "shiny::runApp('~/building-network/app.R')"
 ```
 (substitute `~/building-network_app/` with your path to the app, if you haven't cloned `building-network` to your `home/` folder).
 
