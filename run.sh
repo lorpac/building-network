@@ -1,1 +1,1 @@
-python3 main.py "$1" "$2"
+python3h main.py "$1" "$2"
