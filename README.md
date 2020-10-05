@@ -143,6 +143,16 @@ install.packages("markdown", dependencies = TRUE)
 
 in the R console.
 
+You can also install the packages directly from your console by typing:
+
+```
+R -e "install.packages("shiny", dependencies = TRUE)"
+R -e "install.packages("leaflet", dependencies = TRUE)"
+R -e "install.packages("leaflet.extras", dependencies = TRUE)"
+R -e "install.packages("comprehenr", dependencies = TRUE)"
+R -e "install.packages("markdown", dependencies = TRUE)"
+```
+
 
 ###  1.5. <a name='HowtousetheRShinyapp'></a>How to use the R Shiny app
 ####  1.5.1. <a name='Launchtheapp'></a>Launch the app
