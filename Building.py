@@ -18,6 +18,7 @@ import json
 from copy import deepcopy
 import imageio
 import pickle
+import pandas as pd
 
 plt.ioff()
 
@@ -223,6 +224,79 @@ class Building():
         self.net_assigned = True
         self.assign_node_color()
         self.assign_edge_color()
+
+    def create_database(self, folder_path= ".temp", filename="database.csv"):
+
+        G = self.network
+        df = self.buildings_df
+        neigh_watch_sharp_dict = {}
+        area_sharp_dict = {}
+        perimeter_sharp_dict = {}
+        columns = ['id', 'k', 'w', 'w/k', 'area', 'perimeter', 'form_factor', 'neigh_watch_sharp', 'area_sharp', 'perimeter_sharp']
+
+        area = df.area.values
+        max_area = sorted(area, reverse=True)[50]
+        n_area_steps = 6
+        step_area = max_area / n_area_steps ** 2 # quadratic steps
+        area_steps = [step_area * (i ** 2) for i in range(1, n_area_steps + 1)] + [0] # EXTRA CLASS FOR BIGGER AREAS
+        
+        max_perimeter = 700
+        step_perimeter = max_perimeter / 5
+        perimeter_steps = [i * step_perimeter for i in range(1, 6)] + [0] # EXTRA CLASS FOR BIGGER PERIMETERS
+
+        data = []
+        for node in G.nodes:
+            k = nx.degree(G, node)
+            w = nx.degree(G, node, weight='weight')
+            nw = w / k
+            if self.neigh_watch_sharp_dict:
+                neigh_watch_sharp = self.neigh_watch_sharp_dict[node]
+            else:
+                if nw < 500:
+                    neigh_watch_sharp = 0
+                elif nw < 1000:
+                    neigh_watch_sharp = 1
+                elif nw < 1500:
+                    neigh_watch_sharp = 2
+                elif nw < 2000:
+                    neigh_watch_sharp = 3
+                elif nw < 2500:
+                    neigh_watch_sharp = 4
+                else:
+                    neigh_watch_sharp = 5
+            
+            b = df.iloc[[node]]
+            a = b.area.values[0]
+            c = b.centroid.values[0]
+            boundary = b.boundary.values[0]
+            # the form factor is defined as the ratio between the area and the area of the circumscribed circle,
+            # but not all polyogons have a circumscribed circle! I will use the smallest enclosing circle instead.
+            
+        #         r = b.hausdorff_distance(c) # this was my first guess of circumscribed circle
+
+            # Welzl's algorithm to find the smallest enclosing circle:
+            vertices = list(boundary.coords)
+            x_c, y_c, r = sec.make_circle(vertices)
+            a_circle = np.pi * (r ** 2)
+            ff = a / a_circle
+            per = boundary.length
+
+            for j in (range(len(area_steps))):
+                if a <= area_steps[j] or j == len(area_steps) - 1:
+                    area_sharp = j + 1
+                    break
+                    
+            for j in (range(len(perimeter_steps))):
+                if per <= perimeter_steps[j] or j == len(perimeter_steps) - 1:
+                    perimeter_sharp = j + 1
+                    break
+
+            data.append([node, k, w, w/k, a, per, ff, neigh_watch_sharp, area_sharp, perimeter_sharp])
+        db = pd.DataFrame(data, columns=columns)
+        db = db.sort_values('area')
+        self.database = db
+        db.to_csv(os.path.join(folder_path, filename), index=False)
+
 
     def assign_node_color(self, colors = ['blue', 'cyan', 'greenyellow', 'yellow', 'orange', 'red']):
         G = self.network
