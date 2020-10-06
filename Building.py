@@ -456,5 +456,37 @@ class Building():
             plt.show()
         plt.close()
 
+    def plot_neighborhood(self, building, imgs_folder=".temp", name="", grayscale=False, file_name = "", file_format="png", show=True, radius=1):
+        G = self.network
+        if not hasattr(self, 'database'):
+            print("Creating self database")
+            self.create_database()
+        db = self.database
+        df = self.buildings_df
+
+        neighborhood = nx.ego_graph(G, building,radius=radius)
+        buildings = df.iloc[list(neighborhood)]
+        pos = {n: (df.iloc[[n]].centroid.x.values[0], df.iloc[[n]].centroid.y.values[0])  for n in neighborhood}
+        if grayscale:
+            color = ["dimgray" if b == building else "lightgray" for b in buildings.index]
+        else:
+            colors = self.colors_nodes
+            nw_dict = self.neigh_watch_sharp_dict
+            color = [colors[nw_dict[b]] for b in buildings.index]
+            buildings.plot(color=color, edgecolor="k")
+        nx.draw(neighborhood, pos=pos, node_color='gray', weights='weights', node_size = 30, edgecolors="k")
+        nx.draw_networkx_nodes(neighborhood, nodelist=[building], pos=pos, node_color='black', node_size=50)
+        path = os.path.join(imgs_folder, "neighborhoods", name)
+        os.makedirs(path, exist_ok=True)
+        building_data = db[db.id == building]
+        text =  "id: %s\n" %building + "w = %.0f \n" %building_data["w"].values[0] + "k = %.0f\n" %building_data["k"].values[0] + "w/k = %.0f\n" %building_data["w/k"].values[0] + "A = %.2f\n" %building_data["area"].values[0] + "2p = %.2f" %building_data["perimeter"].values[0]
+        xtext = max(buildings.bounds.maxx) + 35
+        plt.text(xtext, pos[building][1], text, fontsize=10, horizontalalignment='center', verticalalignment='center', fontweight="bold", fontfamily="serif", bbox=dict(facecolor='white', alpha=0.8))
+        plt.tight_layout()
+        plt.savefig(os.path.join(path, str(building) + file_name + "." + file_format))
+        if show:
+            plt.show()
+        plt.close()
+
     def dump(self, filepath=".temp/B.p"):
         pickle.dump(self, open(filepath, "wb"))
