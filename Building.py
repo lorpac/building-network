@@ -58,7 +58,7 @@ class Building():
         with open(filename, 'w') as file:
             json.dump(self.config.__dict__, file, indent=4)
 
-    def download_buildings(self):
+    def download_buildings(self, save=False, folder_path=".temp", filename="buildingsOSM.shp"):
         if self.point_coords:
             self.buildings = ox.footprints.footprints_from_point(self.point_coords, distance=self.distance)
             self.buildings = ox.project_gdf(self.buildings)
@@ -66,6 +66,10 @@ class Building():
             self.buildings = ox.footprints.footprints_from_place(self.place_name)
             self.buildings = ox.project_gdf(self.buildings)
         self.is_downloaded = True
+        if save:
+            os.makedirs(folder_path, exist_ok=True)
+            gdf_save = self.buildings.applymap(lambda x: str(x) if isinstance(x, list) else x)
+            gdf_save.drop(labels='nodes', axis=1).to_file(os.path.join(folder_path, filename))
     
     def plot_buildings(self, fc='black', ec='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
         if self.is_merged:
@@ -297,6 +301,9 @@ class Building():
         self.database = db
         db.to_csv(os.path.join(folder_path, filename), index=False)
 
+    def report_buildings_stats(self, folder_path= ".temp", filename="building_stats.csv"):
+        self.database.describe().to_csv(os.path.join(folder_path, filename))
+
 
     def assign_node_color(self, colors = ['blue', 'cyan', 'greenyellow', 'yellow', 'orange', 'red']):
         G = self.network
@@ -490,3 +497,136 @@ class Building():
 
     def dump(self, filepath=".temp/B.p"):
         pickle.dump(self, open(filepath, "wb"))
+
+    @staticmethod
+    def herfindhal_index(x):
+        num = sum([v ** 2 for v in x])
+        den = (sum(x)) ** 2
+        H = num / den
+        return H
+   
+    def plot_neighborhood_watch_distribution(self, imgs_folder = ".temp", filename="neighborhood_watch_distribution" ,file_format='png', show=True, save=True):
+        plt.rcParams.update({'font.size': 22})
+        mpl.rc('text', usetex=True)
+        fig, ax1 = plt.subplots(figsize=(10,10))
+        try:
+            neigh_watch = self.database["w/k"]
+        except AttributeError:
+            self.create_database(filepath=imgs_folder)
+        hist, bins, _ = plt.hist(neigh_watch, bins=np.arange(0, 6000, 100), rwidth=0.8)
+        # plt.title("Node's average link weight distribution")
+        plt.ylabel('N(w/k)')
+        plt.xlabel('w/k [$m^2$]')
+        N = len(self.database)
+        H = self.herfindhal_index(neigh_watch)
+        t = '$\\newline\\newline$'.join(['', 'Herfindhal index:', 'H = %.3f' %(H), '1/H = %.1f' %(1 / H),
+                        'N = %s' %(N), 'N. outliers = %.3f * N' %(1 - 1 / (H * N))])
+        x = max(bins) / 2
+        y = max(hist) / 2
+        plt.text(x, y, t, verticalalignment='center',
+                horizontalalignment='left', fontsize=18)
+        left, bottom, width, height = [0.35, 0.7, 0.5, 0.1]
+        ax2 = fig.add_axes([left, bottom, width, height])
+        ax2.boxplot(neigh_watch, vert=False)
+        plt.yticks([])
+        plt.xlabel('w/k', fontsize=18)
+        plt.xticks(fontsize=18)
+        plt.xlim(-100, 6000)
+        plt.tight_layout()
+        if save:
+            plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
+        if show:
+            plt.show()
+        plt.close()
+
+    def plot_link_weight_distribution(self, imgs_folder = ".temp", filename="link_weight_distribution" ,file_format='png', show=True, save=True, logscale=False):
+        plt.rcParams.update({'font.size': 22})
+        mpl.rc('text', usetex=True)
+        fig, ax1 = plt.subplots(figsize=(10,10))
+        weights_values = list(self.weights.values())
+        hist, bins, _ = plt.hist(weights_values, bins=np.arange(0, 8000, 100), rwidth=0.8)
+        if logscale:
+            plt.yscale('log')
+        plt.title('Pairwise weight distribution')
+        plt.ylabel('N(w(ij))')
+        plt.xlabel('w(ij) [$m^2$]')
+        H = self.herfindhal_index(weights_values)
+        M = len(weights_values)
+        t = '$\\newline\\newline$'.join(['', 'Herfindhal index:', 'H = %.3f' %(H), '1/H = %.1f' %(1 / H),
+                        'N = %s' %(M), 'N. outliers = %.3f M' %(1 - 1 / (H * M))])
+        x = max(bins) / 2
+        y = max(hist) / 2
+        plt.text(x, y, t, verticalalignment='center',
+                horizontalalignment='left', fontsize=22)
+        left, bottom, width, height = [0.35, 0.7, 0.5, 0.1]
+        ax2 = fig.add_axes([left, bottom, width, height])
+        ax2.boxplot(weights_values, vert=False)
+        plt.yticks([])
+        plt.xlabel('w(i,j)', fontsize=18)
+        plt.xticks(fontsize=18)
+        plt.xlim(-100, 6000)
+        plt.tight_layout()
+        if save:
+            plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
+        if show:
+            plt.show()
+        plt.close()
+
+    def report_stats_highwij(self, filepath="stats_highwij.txt"):
+        net = self.network
+        with open(filepath, "w") as f:
+            f.write("Nw large if > 1500\n")
+            f.write("wij large if > 2500\n")
+            n = 0
+            D = {}
+            for u in net.nodes:
+                k = net.degree(u)
+                w = net.degree(u, weight='weight')
+                nw = w/k
+                count = 0
+                if nw > 1500:
+                    n += 1
+                    for v in net.neighbors(u):
+                        wij = net.get_edge_data(u, v)['weight']
+                        if wij >  2500:
+                            count += 1
+                    try:
+                        D[count] += 1
+                    except KeyError:
+                        D[count] = 1
+
+            for c in sorted(D):
+                D[c] = D[c] / n
+                f.write("%.1f%% nodes with %s large-wij links among large-NW nodes\n" %(D[c]*100, c))
+
+            wij_list = [net.get_edge_data(u, v)['weight'] for u, v in net.edges()]
+            f.write("%.2f%% of links have wij>2250m^2\n" %(len([wij for wij in wij_list if wij > 2250]) / len(wij_list) * 100))
+
+            n = 0
+            D = {}
+            for u, v in net.edges:
+                wij = net.get_edge_data(u, v)['weight']
+                if wij > 2500:
+                    n += 1
+                    count = 0
+                    ku = net.degree(u)
+                    wu = net.degree(u, weight='weight')
+                    nwu = wu/ku
+                    if nwu > 1500:
+                        count += 1
+                    kv = net.degree(v)
+                    wv = net.degree(v, weight='weight')
+                    nwv = wv/kv
+                    if nwv > 1500:
+                        count += 1
+                        
+                    try:
+                        D[count] += 1
+                    except KeyError:
+                        D[count] = 1
+
+            for c in sorted(D):
+                D[c] = D[c] / n
+                f.write("%.1f%% links with %s high NW endpoints among large-wij links" %(D[c]*100, c))
+                    
+            
