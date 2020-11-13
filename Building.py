@@ -75,6 +75,7 @@ class Building():
     
     def plot_buildings(self, color='black', edgecolor='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
         self.downloaded_buildings.plot(color=color, figsize=figsize, edgecolor=edgecolor)
+        plt.axis("off")
         plt.tight_layout()
         if save:
             os.makedirs(imgs_folder, exist_ok=True)
@@ -83,8 +84,6 @@ class Building():
             plt.show()
         plt.close()
     
-
-
     def plot_buildings_function(self, selected_functions=None, imgs_folder=".temp", filename="buildings_function", file_format='png', show=True, save=True, figsize=(30,30)):
         downloaded_buildings =  gpd.GeoDataFrame(self.downloaded_buildings)
 
@@ -327,6 +326,11 @@ class Building():
             
         #         r = b.hausdorff_distance(c) # this was my first guess of circumscribed circle
 
+            # need to convert multilines to lines to get boundary coords
+            if boundary.type == 'MultiLineString':
+                multicoords = [list(line.coords) for line in boundary]
+                boundary = shapely.geometry.LineString([item for sublist in multicoords  for item in sublist])
+            
             # Welzl's algorithm to find the smallest enclosing circle:
             vertices = list(boundary.coords)
             x_c, y_c, r = sec.make_circle(vertices)
