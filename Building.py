@@ -73,16 +73,14 @@ class Building():
             gdf_save = self.buildings.applymap(lambda x: str(x) if isinstance(x, list) else x)
             gdf_save.drop(labels='nodes', axis=1).to_file(os.path.join(folder_path, filename))
     
-    def plot_buildings(self, fc='black', ec='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
-        if self.is_merged:
-            raise Exception("merge_and_convex() already performed on Building. Please use plot_merged_buildings()")
-        fig, ax = ox.plot_shape(self.buildings, fc=fc, ec=ec, figsize=figsize)
+    def plot_buildings(self, color='black', edgecolor='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
+        self.downloaded_buildings.plot(color=color, figsize=figsize, edgecolor=edgecolor)
+        plt.tight_layout()
         if save:
-            ox.settings.imgs_folder = imgs_folder
-            ox.save_and_show(fig, ax, save=True, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
-        elif show:
-            ox.settings.imgs_folder = imgs_folder
-            ox.save_and_show(fig, ax, save=False, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
+            os.makedirs(imgs_folder, exist_ok=True)
+            plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
+        if show:
+            plt.show()
         plt.close()
     
 
@@ -119,8 +117,8 @@ class Building():
         cbar.ax.tick_params(labelsize=25) 
 
         if selected_functions:
-            downloaded_buildings.plot(color='lightgray', figsize=figsize, ax=ax0)
-        selected.plot(column="function_number", figsize=figsize, ax=ax0, cmap=cmap, norm=norm)
+            downloaded_buildings.plot(color='lightgray', figsize=figsize, ax=ax0, edgecolor="k")
+        selected.plot(column="function_number", figsize=figsize, ax=ax0, cmap=cmap, norm=norm, edgecolor="k")
         ax0.axis('off')
 
         
