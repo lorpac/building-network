@@ -19,6 +19,7 @@ from copy import deepcopy
 import imageio
 import pickle
 import pandas as pd
+mpl.rc('text', usetex=False)
 
 plt.ioff()
 
@@ -199,7 +200,8 @@ class Building():
 
     def assign_nodes(self):
         if not self.is_merged:
-            self.buildings = gpd.GeoDataFrame(geometry=list(self.buildings.geometry))
+            self.buildings = gpd.GeoSeries(list(self.buildings.geometry))
+            self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
         self.nodes = self.buildings.centroid
         col = [1 for build in self.buildings] + [2 for node in self.nodes]
         self.nodes_df = gpd.GeoDataFrame(col, geometry=[build for build in self.buildings] + [node for node in self.nodes], columns=['color'])
@@ -210,8 +212,6 @@ class Building():
              self.distance_threshold = distance_threshold
         else:
             distance_threshold = self.distance_threshold 
-        if not self.is_merged:
-            raise Exception("Please run merge_and_convex() before.")
         self.edges, self.weights = assign_edges(self.buildings, distance_threshold=distance_threshold)
 
         nodes=self.nodes
@@ -287,7 +287,10 @@ class Building():
         columns = ['id', 'k', 'w', 'w/k', 'area', 'perimeter', 'form_factor', 'neigh_watch_sharp', 'area_sharp', 'perimeter_sharp']
 
         area = df.area.values
-        max_area = sorted(area, reverse=True)[50]
+        if len(area) > 50:
+            max_area = sorted(area, reverse=True)[50]
+        else:
+            max_area = max(area)
         n_area_steps = 6
         step_area = max_area / n_area_steps ** 2 # quadratic steps
         area_steps = [step_area * (i ** 2) for i in range(1, n_area_steps + 1)] + [0] # EXTRA CLASS FOR BIGGER AREAS
