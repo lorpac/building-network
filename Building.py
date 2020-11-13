@@ -106,7 +106,7 @@ class Building():
                                 width_ratios=[30, 1])
         
         ax0 = fig.add_subplot(spec[0])
-        cmap = mpl.cm.hsv
+        cmap = mpl.cm.tab20c
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
         ax1 = fig.add_subplot(spec[1])
         cbar = mpl.colorbar.ColorbarBase(ax1, cmap=cmap,
@@ -404,7 +404,7 @@ class Building():
         self.colors_edges = colors
 
 
-    def plot_net(self, figsize=(30, 30), save=True, imgs_folder = ".temp", filename="net", file_format='png', show=True, style="node_color"):
+    def plot_net(self, figsize=(30, 30), save=True, imgs_folder = ".temp", filename="net", file_format='png', show=True, style="node_color", draw_nodes=True):
         
         G = self.network
         weights = self.weights
@@ -419,7 +419,8 @@ class Building():
             nx.draw_networkx_edges(G, pos=pos, width=[w * (2) ** (-8) for w in weights_values], ax=ax)
         elif style == "edge_color":
             edge_color = self.edge_color
-            nx.draw_networkx_nodes(G, pos=pos, with_labels=False, edgecolors='k', node_color='w')
+            if draw_nodes:
+                nx.draw_networkx_nodes(G, pos=pos, with_labels=False, edgecolors='k', node_color='w')
             nx.draw_networkx_edges(G, pos=pos, width=[w * (2) ** (-8) for w in weights_values], edge_color=edge_color)
         plt.axis('off')
         plt.tight_layout()
