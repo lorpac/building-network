@@ -66,6 +66,7 @@ class Building():
             self.buildings = ox.footprints.footprints_from_place(self.place_name)
             self.buildings = ox.project_gdf(self.buildings)
         self.is_downloaded = True
+        self.downloaded_buildings = deepcopy(self.buildings)
         if save:
             os.makedirs(folder_path, exist_ok=True)
             gdf_save = self.buildings.applymap(lambda x: str(x) if isinstance(x, list) else x)
@@ -83,6 +84,53 @@ class Building():
             ox.save_and_show(fig, ax, save=False, show=show, close=True, filename=filename, file_format=file_format, dpi=dpi, axis_off=True)
         plt.close()
     
+
+
+    def plot_buildings_function(self, selected_functions=None, imgs_folder=".temp", filename="buildings_function", file_format='png', show=True, save=True, figsize=(30,30)):
+        downloaded_buildings =  gpd.GeoDataFrame(self.downloaded_buildings)
+
+        building_functions = sorted(downloaded_buildings["building"].unique(), reverse=True)
+        if not selected_functions:
+            selected_functions = building_functions
+        N = len(building_functions)
+        bounds = np.arange(-.5, N)
+        ticks = range(N)
+
+        selected = downloaded_buildings[downloaded_buildings["building"].isin(selected_functions)]
+        selected["function_number"] = [building_functions.index(f) for f in selected.building.values]
+
+        fig = plt.figure(figsize=(35, 30))
+        from matplotlib import gridspec
+        spec = gridspec.GridSpec(ncols=2, nrows=1,
+                                width_ratios=[30, 1])
+        
+        ax0 = fig.add_subplot(spec[0])
+        cmap = mpl.cm.hsv
+        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+        ax1 = fig.add_subplot(spec[1])
+        cbar = mpl.colorbar.ColorbarBase(ax1, cmap=cmap,
+                                        norm=norm,
+                                        orientation='vertical',
+                                        ticks=ticks,
+                                        drawedges=True)
+
+        cbar.ax.set_yticklabels(building_functions)
+        cbar.ax.tick_params(labelsize=25) 
+
+        if selected_functions:
+            downloaded_buildings.plot(color='lightgray', figsize=figsize, ax=ax0)
+        selected.plot(column="function_number", figsize=figsize, ax=ax0, cmap=cmap, norm=norm)
+        ax0.axis('off')
+
+        
+        plt.tight_layout()
+        if save:
+            os.makedirs(imgs_folder, exist_ok=True)
+            plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
+        if show:
+            plt.show()
+        plt.close()
+
     def merge_and_convex(self, buffer=0.01, plot=False, imgs_folder=".temp", show=True, save=True, figsize=(30,30), status_to_file=False):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building.")
@@ -151,7 +199,7 @@ class Building():
 
     def assign_nodes(self):
         if not self.is_merged:
-            raise Exception("Please run merge_and_convex() before.")
+            self.buildings = gpd.GeoDataFrame(geometry=list(self.buildings.geometry))
         self.nodes = self.buildings.centroid
         col = [1 for build in self.buildings] + [2 for node in self.nodes]
         self.nodes_df = gpd.GeoDataFrame(col, geometry=[build for build in self.buildings] + [node for node in self.nodes], columns=['color'])
