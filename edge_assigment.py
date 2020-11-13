@@ -29,8 +29,8 @@ def pairwise_weight(i, j, b_i, b_j, nodes, distance_threshold):
         pairwise weight
     """
 
-    n_i = nodes.iloc[i]
-    n_j = nodes.iloc[j]
+    n_i = nodes[i]
+    n_j = nodes[j]
     b_i_buffered = b_i.buffer(distance_threshold)
     b_j_buffered = b_j.buffer(distance_threshold)
     area1 = b_i_buffered.intersection(b_j).area
@@ -85,7 +85,7 @@ def assign_edges(B, distance_threshold, step=None):
     C = [[set() for j in range(n_y)] for i in range(n_x)]
 
     # initialize dictionary of cells touched by each building
-    Cb = {i: set() for i in range(len(B))}
+    Cb = {i: set() for i in B.index}
 
 
     def enclosing_rectangle(building):
@@ -112,13 +112,13 @@ def assign_edges(B, distance_threshold, step=None):
 
 
     # assign cells to each buildings
-    for index, b in enumerate(B):
+    for index, b in B.items():
         assign_building_cells(b, index, step, x0, y0, C, Cb)
 
     # edge assignment
     edges = set([])
     weights = {}
-    for i, b_i in enumerate(B):
+    for i, b_i in B.items():
         node_i = nodes[i]
         neighbors = []
         # Cb_i = Cb[i]

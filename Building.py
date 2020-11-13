@@ -85,6 +85,7 @@ class Building():
         plt.close()
     
     def plot_buildings_function(self, selected_functions=None, imgs_folder=".temp", filename="buildings_function", file_format='png', show=True, save=True, figsize=(30,30)):
+        mpl.rc('text', usetex=False)
         downloaded_buildings =  gpd.GeoDataFrame(self.downloaded_buildings)
 
         building_functions = sorted(downloaded_buildings["building"].unique(), reverse=True)
@@ -129,7 +130,7 @@ class Building():
             plt.show()
         plt.close()
 
-    def merge_and_convex(self, buffer=0.01, plot=False, imgs_folder=".temp", show=True, save=True, figsize=(30,30), status_to_file=False):
+    def merge_and_convex(self, buffer=0.01, plot=False, imgs_folder=".temp", show=True, save=True, figsize=(30,30), status_to_file=False, status_to_console=True):
         if self.is_merged:
             raise Exception("merge_and_convex() already performed on Building.")
 
@@ -140,7 +141,8 @@ class Building():
         if plot:
             output_folder = os.path.join(imgs_folder, "merging_intermediates")
             self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
-        print(i, length)
+        if status_to_console:
+            print(i, length)
         if status_to_file:
             with open("merging_status", "w")  as f:
                 f.write(str(i))
@@ -197,8 +199,8 @@ class Building():
 
     def assign_nodes(self):
         if not self.is_merged:
-            self.buildings = gpd.GeoSeries(list(self.buildings.geometry))
-            self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
+            self.buildings = gpd.GeoSeries(list(self.buildings.geometry), index=self.buildings.index)
+            self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings], index=self.buildings.index)
         self.nodes = self.buildings.centroid
         col = [1 for build in self.buildings] + [2 for node in self.nodes]
         self.nodes_df = gpd.GeoDataFrame(col, geometry=[build for build in self.buildings] + [node for node in self.nodes], columns=['color'])
@@ -214,8 +216,8 @@ class Building():
         nodes=self.nodes
         edges_segment = []
         for u, v in self.edges:
-            node_u = nodes.iloc[u]
-            node_v = nodes.iloc[v]
+            node_u = nodes[u]
+            node_v = nodes[v]
             edge_segment = shapely.geometry.LineString([list(node_u.coords)[0], list(node_v.coords)[0]])
             edges_segment.append(edge_segment)
 
@@ -252,7 +254,7 @@ class Building():
     def assign_network(self):
         G = nx.Graph()
         pos = {}
-        for index, node in enumerate(self.nodes):
+        for index, node in self.nodes.items():
             G.add_node(index)
             pos[index] = list(node.coords)[0]
         for u, v in self.edges:
@@ -317,7 +319,7 @@ class Building():
                 else:
                     neigh_watch_sharp = 5
             
-            b = df.iloc[[node]]
+            b = df.loc[[node]]
             a = b.area.values[0]
             c = b.centroid.values[0]
             boundary = b.boundary.values[0]
@@ -526,8 +528,8 @@ class Building():
         df = self.buildings_df
 
         neighborhood = nx.ego_graph(G, building,radius=radius)
-        buildings = df.iloc[list(neighborhood)]
-        pos = {n: (df.iloc[[n]].centroid.x.values[0], df.iloc[[n]].centroid.y.values[0])  for n in neighborhood}
+        buildings = df.loc[list(neighborhood)]
+        pos = {n: (df.loc[[n]].centroid.x.values[0], df.loc[[n]].centroid.y.values[0])  for n in neighborhood}
         if grayscale:
             color = ["dimgray" if b == building else "lightgray" for b in buildings.index]
         else:
