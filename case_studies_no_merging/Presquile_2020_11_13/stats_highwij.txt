@@ -1,0 +1,6 @@
+Nw large if > 1500
+wij large if > 2500
+60.0% nodes with 0 large-wij links among large-NW nodes
+40.0% nodes with 1 large-wij links among large-NW nodes
+0.18% of links have wij>2250m^2
+42.9% links with 0 high NW endpoints among large-wij links42.9% links with 1 high NW endpoints among large-wij links14.3% links with 2 high NW endpoints among large-wij links
