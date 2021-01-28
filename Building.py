@@ -536,7 +536,7 @@ class Building():
             colors = self.colors_nodes
             nw_dict = self.neigh_watch_sharp_dict
             color = [colors[nw_dict[b]] for b in buildings.index]
-            buildings.plot(color=color, edgecolor="k")
+        buildings.plot(color=color, edgecolor="k")
         nx.draw(neighborhood, pos=pos, node_color='gray', weights='weights', node_size = 30, edgecolors="k")
         nx.draw_networkx_nodes(neighborhood, nodelist=[building], pos=pos, node_color='black', node_size=50)
         path = os.path.join(imgs_folder, "neighborhoods", name)
