@@ -175,7 +175,7 @@ class Building():
         try:
             os.listdir(input_folder)
         except FileNotFoundError:
-            plot_merging_intermediates(imgs_folder=imgs_folder, figsize=figsize, show=False)
+            self.plot_merging_intermediates(imgs_folder=imgs_folder, figsize=figsize, show=False)
         
         filenames = [os.path.join(input_folder, f) for f in sorted(os.listdir(input_folder), key= lambda x: int(x.split(".")[0]))]
         output_file = os.path.join(imgs_folder, filename + ".gif")
