@@ -519,7 +519,7 @@ class Building():
             plt.show()
         plt.close()
 
-    def plot_neighborhood(self, building, imgs_folder=".temp", name="", grayscale=False, file_name = "", file_format="png", show=True, radius=1):
+    def plot_neighborhood(self, building, imgs_folder=".temp", name="", grayscale=False, file_name = "", file_format="png", show=True, radius=1, edgeweight=False, writetext=True):
         G = self.network
         if not hasattr(self, 'database'):
             print("Creating self database")
@@ -537,14 +537,19 @@ class Building():
             nw_dict = self.neigh_watch_sharp_dict
             color = [colors[nw_dict[b]] for b in buildings.index]
         buildings.plot(color=color, edgecolor="k")
-        nx.draw(neighborhood, pos=pos, node_color='gray', weights='weights', node_size = 30, edgecolors="k")
+        nx.draw(neighborhood, pos=pos, node_color='gray', node_size = 30, edgecolors="k")
+        if edgeweight:
+            weights_values = [neighborhood.get_edge_data(u, v)['weight'] for u, v in neighborhood.edges]
+            width=[w * (2) ** (-8) for w in weights_values]
+            nx.draw_networkx_edges(neighborhood, pos=pos, width=width)
         nx.draw_networkx_nodes(neighborhood, nodelist=[building], pos=pos, node_color='black', node_size=50)
         path = os.path.join(imgs_folder, "neighborhoods", name)
         os.makedirs(path, exist_ok=True)
         building_data = db[db.id == building]
-        text =  "id: %s\n" %building + "w = %.0f \n" %building_data["w"].values[0] + "k = %.0f\n" %building_data["k"].values[0] + "w/k = %.0f\n" %building_data["w/k"].values[0] + "A = %.2f\n" %building_data["area"].values[0] + "2p = %.2f" %building_data["perimeter"].values[0]
-        xtext = max(buildings.bounds.maxx) + 35
-        plt.text(xtext, pos[building][1], text, fontsize=10, horizontalalignment='center', verticalalignment='center', fontweight="bold", fontfamily="serif", bbox=dict(facecolor='white', alpha=0.8))
+        if writetext:
+            text =  "id: %s\n" %building + "w = %.0f \n" %building_data["w"].values[0] + "k = %.0f\n" %building_data["k"].values[0] + "w/k = %.0f\n" %building_data["w/k"].values[0] + "A = %.2f\n" %building_data["area"].values[0] + "2p = %.2f" %building_data["perimeter"].values[0]
+            xtext = max(buildings.bounds.maxx) + 35
+            plt.text(xtext, pos[building][1], text, fontsize=10, horizontalalignment='center', verticalalignment='center', fontweight="bold", fontfamily="serif", bbox=dict(facecolor='white', alpha=0.8))
         plt.tight_layout()
         plt.savefig(os.path.join(path, str(building) + file_name + "." + file_format))
         if show:
