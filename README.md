@@ -1,6 +1,6 @@
 # Building network
 
-A Jupyter Notebook and a R Shiny app to create a visualize the *Building network* of a geographical area using data from OpenStreetMap. The *Building network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks.
+A Jupyter Notebook and a R Shiny app to create a visualize the *Building network* of a geographical area using data from OpenStreetMap. The *Building network* is represented by a weighted graph, where nodes are complex hulls of blocks of buildings and weighted links represent proximity between them. The link weight is proportional to the inverse of the empty space between the two blocks. For more details, see the [Cheat Sheet]((https://github.com/lorpac/building-network/blob/master/CheatSheet.pdf).
 
 - the [R Shiny app](https://github.com/lorpac/building-network/blob/master/app.R) allows you to create the Building Network of an area of 2kmx2km size around a geographical point.
 - the [Jupyter notebook](https://github.com/lorpac/building-network/blob/master/Buildings_network.ipynb) allows you to create the Building Network of an area of the size of your choice around a geographical point, or the the Building Network of an entire city.
