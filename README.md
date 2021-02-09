@@ -179,8 +179,6 @@ The area used for the creation of the Building Network is a 2km x 2km square.
 - You can also download the results by clicking on **Download** once the calculation has finished.
 
 
-
-
 ##  2. <a name='Authors'></a>Authors
 
 * **Lorenza Pacini** [lorpac](https://github.com/lorpac)
@@ -188,3 +186,7 @@ The area used for the creation of the Building Network is a 2km x 2km square.
 ##  3. <a name='Knownissuesworkinprogress'></a>Known issues (work in progress!)
 
 - In the R Shiny app, the blue square in the map is deformed at latitudes far from the European latitude. However, this does not impact the shape of the area that is actually considered for the creation of the Building Network, it remains a 2km x 2km squared area centered around the center of the (deformed) square.
+
+## 3. <a name='Licence'></a>Licence
+
+The Building network source code is available under the [CeCILL](http://cecill.info/) licence. Please see `LICENCE.txt` for details.
