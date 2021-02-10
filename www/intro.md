@@ -12,7 +12,7 @@ The area used for the creation of the Buildings Network is a 2km x 2km square.
 
 ### How to cite
 If you use the Buildings Network in your work, please cite 
-- Pacini L.; Cazabet R.; Vuillon L.; and Lesieur C., **Diagnostics of sustainable building layouts in the city of Lyon: a biomimetic approach**, *Manuscript submitted to Biomimetics, Special Issue « Biomimicry and Sustainable Urban Design »*, 2020
+- Pacini L.; Cazabet R.; Vuillon L.; and Lesieur C., **Diagnostics of sustainable building layouts in the city of Lyon: a biomimetic approach**, 2020
 
 ### Going further
 
