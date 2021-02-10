@@ -131,13 +131,9 @@ ui <- fluidPage(
   
   hr(),
   p(
-    "Having fun? Try our Jupyter notebook!",
-    a(
-      href = "https://github.com/lorpac/building-network",
-      icon("github", lib = "font-awesome"),
-      style = "color : initial"
-    ),
-    a(href = "https://github.com/lorpac/building-network", "lorpac/building-network")
+    "The Building network source code is available under the",
+    a(href="http://cecill.info/", "CeCILL"),
+    "licence."
     
   )
   
