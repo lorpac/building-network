@@ -394,17 +394,31 @@ class Building():
     def assign_edge_color(self, colors = ['blue', 'cyan', 'greenyellow', 'yellow', 'orange', 'red']):
         G = self.network
         edge_color = []
+        edge_color_dict = {}
 
         for u, v in G.edges:
             wij = G.get_edge_data(u, v)['weight']
-            if wij < 500: edge_color.append(colors[0])
-            elif wij < 1000:  edge_color.append(colors[1])
-            elif wij < 1500:  edge_color.append(colors[2])
-            elif wij < 2000:  edge_color.append(colors[3])
-            elif wij < 2500:  edge_color.append(colors[4])
-            else: edge_color.append(colors[5])
+            if wij < 500:
+                edge_color.append(colors[0])
+                edge_color_dict[(u, v)] = colors[0]
+            elif wij < 1000: 
+                edge_color.append(colors[1])
+                edge_color_dict[(u, v)] = colors[1]
+            elif wij < 1500: 
+                edge_color.append(colors[2])
+                edge_color_dict[(u, v)] = colors[2]
+            elif wij < 2000:
+                edge_color.append(colors[3])
+                edge_color_dict[(u, v)] = colors[3]
+            elif wij < 2500:
+                edge_color.append(colors[4])
+                edge_color_dict[(u, v)] = colors[4]
+            else:
+                edge_color.append(colors[5])
+                edge_color_dict[(u, v)] = colors[5]
         
         self.edge_color = edge_color
+        self.edge_color_dict = edge_color_dict
         self.colors_edges = colors
 
 
@@ -519,7 +533,7 @@ class Building():
             plt.show()
         plt.close()
 
-    def plot_neighborhood(self, building, imgs_folder=".temp", name="", grayscale=False, file_name = "", file_format="png", show=True, radius=1, edgeweight=False, writetext=True):
+    def plot_neighborhood(self, building, imgs_folder=".temp", name="", grayscale=False, file_name = "", file_format="png", show=True, radius=1, edgeweight=False, writetext=True, color_edges=False):
         G = self.network
         if not hasattr(self, 'database'):
             print("Creating self database")
@@ -536,12 +550,16 @@ class Building():
             colors = self.colors_nodes
             nw_dict = self.neigh_watch_sharp_dict
             color = [colors[nw_dict[b]] for b in buildings.index]
+        if color_edges:
+            edge_color = [self.edge_color_dict[(u, v)] if (u, v) in self.edge_color_dict else self.edge_color_dict[(v, u)] for u, v in neighborhood.edges]
+        else:
+            edge_color = "k"
         buildings.plot(color=color, edgecolor="k")
         nx.draw(neighborhood, pos=pos, node_color='gray', node_size = 30, edgecolors="k")
         if edgeweight:
             weights_values = [neighborhood.get_edge_data(u, v)['weight'] for u, v in neighborhood.edges]
             width=[w * (2) ** (-8) for w in weights_values]
-            nx.draw_networkx_edges(neighborhood, pos=pos, width=width)
+            nx.draw_networkx_edges(neighborhood, pos=pos, width=width, edge_color=edge_color)
         nx.draw_networkx_nodes(neighborhood, nodelist=[building], pos=pos, node_color='black', node_size=50)
         path = os.path.join(imgs_folder, "neighborhoods", name)
         os.makedirs(path, exist_ok=True)
