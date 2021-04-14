@@ -707,5 +707,16 @@ class Building():
             for c in sorted(D):
                 D[c] = D[c] / n
                 f.write("%.1f%% links with %s high NW endpoints among large-wij links" %(D[c]*100, c))
+
+    def save_shapes_full_empty(self, folder=".temp", name=""):
+        self.buildings.to_file(os.path.join(folder, "shapes", name + "merged_buildings") + ".shp")
+        minx, miny, maxx, maxy = self.buildings.total_bounds
+        envelope = shapely.geometry.box(minx, miny, maxx, maxy)
+        envelopegdf = gpd.GeoDataFrame(gpd.GeoSeries(envelope))
+        Bgdf = gpd.GeoDataFrame(self.buildings)
+        envelopegdf = envelopegdf.rename(columns={0:'geometry'}).set_geometry('geometry')
+        Bgdf = Bgdf.rename(columns={0:'geometry'}).set_geometry('geometry')
+        empty_space = gpd.overlay(envelopegdf, Bgdf, how="difference")
+        empty_space.to_file(os.path.join(folder, name + "merged_buildings") + "_empty.shp")
                     
             
