@@ -718,6 +718,6 @@ class Building():
         envelopegdf = envelopegdf.rename(columns={0:'geometry'}).set_geometry('geometry')
         Bgdf = Bgdf.rename(columns={0:'geometry'}).set_geometry('geometry')
         empty_space = gpd.overlay(envelopegdf, Bgdf, how="difference")
-        empty_space.to_file(os.path.join(folder, name + "merged_buildings") + "_empty.shp")
+        empty_space.to_file(os.path.join(folder, "shapes", name + "merged_buildings") + "_empty.shp")
                     
             
