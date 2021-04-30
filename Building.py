@@ -280,6 +280,7 @@ class Building():
 
         G = self.network
         df = self.buildings_df
+        merged = self.is_merged
         neigh_watch_sharp_dict = {}
         area_sharp_dict = {}
         perimeter_sharp_dict = {}
@@ -306,15 +307,15 @@ class Building():
             if self.neigh_watch_sharp_dict:
                 neigh_watch_sharp = self.neigh_watch_sharp_dict[node]
             else:
-                if nw < 500:
+                if (merged and nw < 500) or (not merged and nw < 300):
                     neigh_watch_sharp = 0
-                elif nw < 1000:
+                elif (merged and nw < 1000) or (not merged and nw < 600):
                     neigh_watch_sharp = 1
-                elif nw < 1500:
+                elif (merged and nw < 1500) or (not merged and nw < 900):
                     neigh_watch_sharp = 2
-                elif nw < 2000:
+                elif (merged and nw < 2000) or (not merged and nw < 1200):
                     neigh_watch_sharp = 3
-                elif nw < 2500:
+                elif (merged and nw < 2500) or (not merged and nw < 1500):
                     neigh_watch_sharp = 4
                 else:
                     neigh_watch_sharp = 5
@@ -362,6 +363,7 @@ class Building():
 
     def assign_node_color(self, colors = ['blue', 'cyan', 'greenyellow', 'yellow', 'orange', 'red']):
         G = self.network
+        merged = self.is_merged
         neigh_watch_sharp_dict = {}
         node_color = []
         for index, node in enumerate(G.nodes):
@@ -369,19 +371,19 @@ class Building():
             w = nx.degree(G, node, weight='weight')
             nw = w / k
             
-            if nw < 500:
+            if (merged and nw < 500) or (not merged and nw < 300):
                 neigh_watch_sharp_dict[node] = 0
                 node_color.append(colors[0])
-            elif nw < 1000:
+            elif (merged and nw < 1000) or (not merged and nw < 600):
                 neigh_watch_sharp_dict[node] = 1
                 node_color.append(colors[1])
-            elif nw < 1500:
+            elif (merged and nw < 1500) or (not merged and nw < 900):
                 neigh_watch_sharp_dict[node] = 2
                 node_color.append(colors[2])
-            elif nw < 2000:
+            elif (merged and nw < 2000) or (not merged and nw < 1200):
                 neigh_watch_sharp_dict[node] = 3
                 node_color.append(colors[3])
-            elif nw < 2500:
+            elif (merged and nw < 2500) or (not merged and nw < 1500):
                 neigh_watch_sharp_dict[node] = 4
                 node_color.append(colors[4])
             else:
@@ -481,6 +483,7 @@ class Building():
 
     def plot_nodes_legend(self, save=True, imgs_folder = ".temp", filename="legend_nodes" , file_format='png', show=True):
         colors = self.colors_nodes
+        merged = self.is_merged
         Glegend = nx.Graph()
         for n in range(1, 7):
             Glegend.add_node(str(n))
@@ -496,12 +499,20 @@ class Building():
         plt.ylim(-0.2, 6)
         plt.rc('text', usetex=True)
         plt.rc('font', family='calibri')
-        plt.text(0.2, 0, 'w/k $<$ 500 $m^2$',fontsize=16)
-        plt.text(0.2, 1, '500 ${m}^2$ $\leq$ w/k $<$ 1000 ${m}^2$',fontsize=16)
-        plt.text(0.2, 2, '1000 ${m}^2$ $\leq$ w/k $<$ 1500 ${m}^2$',fontsize=16)
-        plt.text(0.2, 3, '1500 ${m}^2$ $\leq$ w/k $<$ 2000 ${m}^2$',fontsize=16)
-        plt.text(0.2, 4, '2000 ${m}^2$ $\leq$ w/k $<$ 2500 ${m}^2$',fontsize=16)
-        plt.text(0.2, 5, 'w/k $>$ 2500 ${m}^2$',fontsize=16)
+        if merged:
+            plt.text(0.2, 0, 'w/k $<$ 500 $m^2$',fontsize=16)
+            plt.text(0.2, 1, '500 ${m}^2$ $\leq$ w/k $<$ 1000 ${m}^2$',fontsize=16)
+            plt.text(0.2, 2, '1000 ${m}^2$ $\leq$ w/k $<$ 1500 ${m}^2$',fontsize=16)
+            plt.text(0.2, 3, '1500 ${m}^2$ $\leq$ w/k $<$ 2000 ${m}^2$',fontsize=16)
+            plt.text(0.2, 4, '2000 ${m}^2$ $\leq$ w/k $<$ 2500 ${m}^2$',fontsize=16)
+            plt.text(0.2, 5, 'w/k $>$ 2500 ${m}^2$',fontsize=16)
+        else:
+            plt.text(0.2, 0, 'w/k $<$ 300 $m^2$',fontsize=16)
+            plt.text(0.2, 1, '300 ${m}^2$ $\leq$ w/k $<$ 600 ${m}^2$',fontsize=16)
+            plt.text(0.2, 2, '600 ${m}^2$ $\leq$ w/k $<$ 900 ${m}^2$',fontsize=16)
+            plt.text(0.2, 3, '900 ${m}^2$ $\leq$ w/k $<$ 1200 ${m}^2$',fontsize=16)
+            plt.text(0.2, 4, '1200 ${m}^2$ $\leq$ w/k $<$ 1500 ${m}^2$',fontsize=16)
+            plt.text(0.2, 5, 'w/k $>$ 1500 ${m}^2$',fontsize=16)
         if save:
             plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
         if show:
