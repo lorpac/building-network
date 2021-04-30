@@ -395,24 +395,25 @@ class Building():
 
     def assign_edge_color(self, colors = ['blue', 'cyan', 'greenyellow', 'yellow', 'orange', 'red']):
         G = self.network
+        merged = self.is_merged
         edge_color = []
         edge_color_dict = {}
 
         for u, v in G.edges:
             wij = G.get_edge_data(u, v)['weight']
-            if wij < 500:
+            if (merged and wij < 500) or (not merged and wij < 300):
                 edge_color.append(colors[0])
                 edge_color_dict[(u, v)] = colors[0]
-            elif wij < 1000: 
+            elif (merged and wij < 1000) or (not merged and wij < 600): 
                 edge_color.append(colors[1])
                 edge_color_dict[(u, v)] = colors[1]
-            elif wij < 1500: 
+            elif (merged and wij < 1500) or (not merged and wij < 900): 
                 edge_color.append(colors[2])
                 edge_color_dict[(u, v)] = colors[2]
-            elif wij < 2000:
+            elif (merged and wij < 2000) or (not merged and wij < 1200):
                 edge_color.append(colors[3])
                 edge_color_dict[(u, v)] = colors[3]
-            elif wij < 2500:
+            elif (merged and wij < 2500) or (not merged and wij < 1500):
                 edge_color.append(colors[4])
                 edge_color_dict[(u, v)] = colors[4]
             else:
@@ -521,12 +522,21 @@ class Building():
 
     def plot_edges_legend(self, save=True, imgs_folder = ".temp", filename="legend_edges" , file_format='png', show=True):
         colors = self.colors_edges
-        texts = ['$w_{ij} \  <500\ m^2$',
-         '$500\ m^2 \leq \ w_{ij} \  < 1000\ m^2$',
-         '$1000\ m^2 \leq \ w_{ij} \  < 1500\ m^2$',
-         '$1500\ m^2 \leq \ w_{ij} \  < 2000\ m^2$',
-         '$2000\ m^2 \leq \ w_{ij} \  < 2500\ m^2$',
-         '$w_{ij} \  \geq 2500\ m^2$']
+        merged = self.is_merged
+        if merged:
+            texts = ['$w_{ij} \  <500\ m^2$',
+            '$500\ m^2 \leq \ w_{ij} \  < 1000\ m^2$',
+            '$1000\ m^2 \leq \ w_{ij} \  < 1500\ m^2$',
+            '$1500\ m^2 \leq \ w_{ij} \  < 2000\ m^2$',
+            '$2000\ m^2 \leq \ w_{ij} \  < 2500\ m^2$',
+            '$w_{ij} \  \geq 2500\ m^2$']
+        else:
+            texts = ['$w_{ij} \  <300\ m^2$',
+            '$300\ m^2 \leq \ w_{ij} \  < 600\ m^2$',
+            '$600\ m^2 \leq \ w_{ij} \  < 900\ m^2$',
+            '$900\ m^2 \leq \ w_{ij} \  < 1200\ m^2$',
+            '$1200\ m^2 \leq \ w_{ij} \  < 1500\ m^2$',
+            '$w_{ij} \  \geq 1500\ m^2$']
         fig = plt.figure()
         plt.rc('text', usetex=True)
         plt.rc('font', family='calibri')
