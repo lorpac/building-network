@@ -20,6 +20,7 @@ import imageio
 import pickle
 import pandas as pd
 mpl.rc('text', usetex=False)
+import copy
 
 plt.ioff()
 
@@ -138,6 +139,7 @@ class Building():
         go = True
         length = len(self.buildings)
         i = 0
+        merging_intermediates = []
         if plot:
             output_folder = os.path.join(imgs_folder, "merging_intermediates")
             self.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
@@ -150,6 +152,7 @@ class Building():
             i += 1
             self.buildings = gpd.GeoDataFrame(geometry=list(self.buildings.unary_union)).convex_hull
             print(i, len(self.buildings))
+            merging_intermediates.append(copy.deepcopy(self))
             if len(self.buildings) == length:
                 go = False
             else:
@@ -161,6 +164,7 @@ class Building():
                 length = len(self.buildings)
         self.is_merged = True
         self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
+        self.merging_intermediates = merging_intermediates
 
     def plot_merging_intermediates(self, imgs_folder=".temp", show=True, save=True, figsize=(30,30)):
         if not self.is_merged:
