@@ -17,8 +17,8 @@ import os
 import json
 from copy import deepcopy
 import imageio
-import pickle
 import pandas as pd
+import pickle
 mpl.rc('text', usetex=False)
 
 plt.ioff()
