@@ -31,7 +31,7 @@ class Building():
             return pickle.load(open(filepath, "rb"))
         else:
             return Building(point_coords=point_coords, config_file=config_file, place_name=place_name, distance=distance, distance_threshold=distance_threshold)
-    
+
     def __init__(self, point_coords=None, config_file=None, place_name=None, distance=1000, distance_threshold=30):
 
         def load_config(filename):
@@ -72,7 +72,7 @@ class Building():
             os.makedirs(folder_path, exist_ok=True)
             gdf_save = self.buildings.applymap(lambda x: str(x) if isinstance(x, list) else x)
             gdf_save.drop(labels='nodes', axis=1).to_file(os.path.join(folder_path, filename))
-    
+
     def plot_buildings(self, color='black', edgecolor='gray', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings", file_format='png', dpi=300, show=True):
         self.downloaded_buildings.plot(color=color, figsize=figsize, edgecolor=edgecolor)
         plt.axis("off")
@@ -83,7 +83,7 @@ class Building():
         if show:
             plt.show()
         plt.close()
-    
+
     def plot_buildings_function(self, selected_functions=None, imgs_folder=".temp", filename="buildings_function", file_format='png', show=True, save=True, figsize=(30,30)):
         mpl.rc('text', usetex=False)
         downloaded_buildings =  gpd.GeoDataFrame(self.downloaded_buildings)
@@ -102,7 +102,7 @@ class Building():
         from matplotlib import gridspec
         spec = gridspec.GridSpec(ncols=2, nrows=1,
                                 width_ratios=[30, 1])
-        
+
         ax0 = fig.add_subplot(spec[0])
         cmap = mpl.cm.tab20c
         norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
@@ -114,14 +114,14 @@ class Building():
                                         drawedges=True)
 
         cbar.ax.set_yticklabels(building_functions)
-        cbar.ax.tick_params(labelsize=25) 
+        cbar.ax.tick_params(labelsize=25)
 
         if selected_functions:
             downloaded_buildings.plot(color='lightgray', figsize=figsize, ax=ax0, edgecolor="k")
         selected.plot(column="function_number", figsize=figsize, ax=ax0, cmap=cmap, norm=norm, edgecolor="k")
         ax0.axis('off')
 
-        
+
         plt.tight_layout()
         if save:
             os.makedirs(imgs_folder, exist_ok=True)
@@ -146,6 +146,7 @@ class Building():
         if status_to_file:
             with open("merging_status", "w")  as f:
                 f.write(str(i))
+        merging_intermediates = [deepcopy(self.buildings)]
         while go:
             i += 1
             self.buildings = gpd.GeoDataFrame(geometry=list(self.buildings.unary_union)).convex_hull
@@ -159,8 +160,10 @@ class Building():
                     with open("merging_status", "w")  as f:
                         f.write(str(i))
                 length = len(self.buildings)
+                merging_intermediates.append(deepcopy(self.buildings))
         self.is_merged = True
         self.buildings_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
+        self.merging_intermediates = merging_intermediates
 
     def plot_merging_intermediates(self, imgs_folder=".temp", show=True, save=True, figsize=(30,30)):
         if not self.is_merged:
@@ -168,7 +171,7 @@ class Building():
             self.merge_and_convex()
         output_folder = os.path.join(imgs_folder, "merging_intermediates")
         for i, b in enumerate(self.merging_intermediates):
-            b.plot_merged_buildings(imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
+            self.plot_merged_buildings(buildings=b, imgs_folder=output_folder, filename=str(i), show=show, save=save, figsize=figsize)
 
     def create_gif_merging(self, imgs_folder=".temp", fps=2, figsize=(30,30), filename='merging'):
         input_folder = os.path.join(imgs_folder, "merging_intermediates")
@@ -176,7 +179,7 @@ class Building():
             os.listdir(input_folder)
         except FileNotFoundError:
             self.plot_merging_intermediates(imgs_folder=imgs_folder, figsize=figsize, show=False)
-        
+
         filenames = [os.path.join(input_folder, f) for f in sorted(os.listdir(input_folder), key= lambda x: int(x.split(".")[0]))]
         output_file = os.path.join(imgs_folder, filename + ".gif")
 
@@ -184,10 +187,13 @@ class Building():
             for f in filenames:
                 image = imageio.imread(f)
                 writer.append_data(image)
-        
-    
-    def plot_merged_buildings(self, color='lightgray', edgecolor='black', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="merged", file_format='png', show=True):
-        self.buildings.plot(figsize=figsize, color=color, edgecolor=edgecolor)
+
+
+    def plot_merged_buildings(self, buildings=None, color='lightgray', edgecolor='black', figsize=(30, 30), save=True, imgs_folder = ".temp", filename="merged", file_format='png', show=True):
+        if buildings is None:
+            buildings = self.buildings
+
+        buildings.plot(figsize=figsize, color=color, edgecolor=edgecolor)
         plt.axis('off')
         plt.tight_layout()
         if save:
@@ -196,6 +202,24 @@ class Building():
         if show:
             plt.show()
         plt.close()
+
+    def plot_building_footprint(self, id, color='lightgray', edgecolor='black', figsize=(30, 30), save=True, imgs_folder = ".temp", file_format='png', show=True):
+        b = self.merging_intermediates[-1][id]
+        intersection = self.merging_intermediates[0].intersection(b)
+        intersection = intersection[intersection.area > 0]
+        fig, ax = plt.subplots()
+        gpd.GeoSeries(b).plot(ax=ax, color='white', edgecolor='k')
+        intersection.plot(ax=ax, color='gray', alpha=0.3, edgecolor='k')
+        ax.axis('off')
+        plt.tight_layout()
+        if save:
+            path = os.path.join(imgs_folder, "footprints")
+            os.makedirs(path, exist_ok=True)
+            plt.savefig(os.path.join(path, f'{id}.{file_format}'))
+        if show:
+            plt.show()
+        plt.close()
+
 
     def assign_nodes(self):
         if not self.is_merged:
@@ -210,7 +234,7 @@ class Building():
         if distance_threshold:
              self.distance_threshold = distance_threshold
         else:
-            distance_threshold = self.distance_threshold 
+            distance_threshold = self.distance_threshold
         self.edges, self.weights = assign_edges(self.buildings, distance_threshold=distance_threshold)
 
         nodes=self.nodes
@@ -223,10 +247,10 @@ class Building():
 
         colors = [1 for build in self.buildings] + [2 for edge in edges_segment] + [3 for node in self.nodes]
 
-        self.edges_df = gpd.GeoDataFrame(colors, geometry = [build for build in self.buildings] + edges_segment + 
+        self.edges_df = gpd.GeoDataFrame(colors, geometry = [build for build in self.buildings] + edges_segment +
                             [node for node in self.nodes], columns=['color'])
         self.edges_assigned = True
-    
+
     def plot_nodes(self, figsize=(30, 30), colors=['lightgray', 'black'], markersize=0.1, save=True, imgs_folder = ".temp", filename="nodes", file_format='png', show=True):
         cm = ListedColormap(colors, N=len(colors))
         self.nodes_df.plot(figsize=figsize, column='color', markersize=markersize, cmap=cm)
@@ -259,7 +283,7 @@ class Building():
             pos[index] = list(node.coords)[0]
         for u, v in self.edges:
             G.add_edge(u, v)
-            
+
         nx.set_edge_attributes(G, self.weights, name='weight')
 
         degrees_zero = []
@@ -269,7 +293,7 @@ class Building():
                 degrees_zero.append(node)
 
         G.remove_nodes_from(degrees_zero)
-        self.network = G        
+        self.network = G
         self.network_df = gpd.GeoDataFrame(geometry=[build for build in self.buildings])
         self.network_pos = pos
         self.net_assigned = True
@@ -294,7 +318,7 @@ class Building():
         n_area_steps = 6
         step_area = max_area / n_area_steps ** 2 # quadratic steps
         area_steps = [step_area * (i ** 2) for i in range(1, n_area_steps + 1)] + [0] # EXTRA CLASS FOR BIGGER AREAS
-        
+
         max_perimeter = 700
         step_perimeter = max_perimeter / 5
         perimeter_steps = [i * step_perimeter for i in range(1, 6)] + [0] # EXTRA CLASS FOR BIGGER PERIMETERS
@@ -319,21 +343,21 @@ class Building():
                     neigh_watch_sharp = 4
                 else:
                     neigh_watch_sharp = 5
-            
+
             b = df.loc[[node]]
             a = b.area.values[0]
             c = b.centroid.values[0]
             boundary = b.boundary.values[0]
             # the form factor is defined as the ratio between the area and the area of the circumscribed circle,
             # but not all polyogons have a circumscribed circle! I will use the smallest enclosing circle instead.
-            
+
         #         r = b.hausdorff_distance(c) # this was my first guess of circumscribed circle
 
             # need to convert multilines to lines to get boundary coords
             if boundary.type == 'MultiLineString':
                 multicoords = [list(line.coords) for line in boundary]
                 boundary = shapely.geometry.LineString([item for sublist in multicoords  for item in sublist])
-            
+
             # Welzl's algorithm to find the smallest enclosing circle:
             vertices = list(boundary.coords)
             x_c, y_c, r = sec.make_circle(vertices)
@@ -345,7 +369,7 @@ class Building():
                 if a <= area_steps[j] or j == len(area_steps) - 1:
                     area_sharp = j + 1
                     break
-                    
+
             for j in (range(len(perimeter_steps))):
                 if per <= perimeter_steps[j] or j == len(perimeter_steps) - 1:
                     perimeter_sharp = j + 1
@@ -370,7 +394,7 @@ class Building():
             k = nx.degree(G, node)
             w = nx.degree(G, node, weight='weight')
             nw = w / k
-            
+
             if (merged and nw < 500) or (not merged and nw < 300):
                 neigh_watch_sharp_dict[node] = 0
                 node_color.append(colors[0])
@@ -404,10 +428,10 @@ class Building():
             if (merged and wij < 500) or (not merged and wij < 300):
                 edge_color.append(colors[0])
                 edge_color_dict[(u, v)] = colors[0]
-            elif (merged and wij < 1000) or (not merged and wij < 600): 
+            elif (merged and wij < 1000) or (not merged and wij < 600):
                 edge_color.append(colors[1])
                 edge_color_dict[(u, v)] = colors[1]
-            elif (merged and wij < 1500) or (not merged and wij < 900): 
+            elif (merged and wij < 1500) or (not merged and wij < 900):
                 edge_color.append(colors[2])
                 edge_color_dict[(u, v)] = colors[2]
             elif (merged and wij < 2000) or (not merged and wij < 1200):
@@ -419,18 +443,18 @@ class Building():
             else:
                 edge_color.append(colors[5])
                 edge_color_dict[(u, v)] = colors[5]
-        
+
         self.edge_color = edge_color
         self.edge_color_dict = edge_color_dict
         self.colors_edges = colors
 
 
     def plot_net(self, figsize=(30, 30), save=True, imgs_folder = ".temp", filename="net", file_format='png', show=True, style="node_color", draw_nodes=True):
-        
+
         G = self.network
         weights = self.weights
         weights_values = [weights[(u, v)] if (u, v) in weights else weights[(v, u)] for u, v in G.edges]
-        
+
         fig, ax  = plt.subplots(figsize=figsize)
         base = self.buildings_df.plot(ax=ax, color='gray', alpha=0.2)
         pos = self.network_pos
@@ -450,11 +474,11 @@ class Building():
             plt.savefig(os.path.join(imgs_folder, filename + "." + file_format))
         if show:
             plt.show()
-        plt.close() 
+        plt.close()
 
     def plot_buildings_color(self, figsize=(30, 30), save=True, imgs_folder = ".temp", filename="buildings_color",
         file_format='png', show=True):
-            
+
             G = self.network
             node_color = self.node_color
             colors = self.colors_nodes
@@ -467,7 +491,7 @@ class Building():
                 if i in G.nodes:
                     nw_sharp = neigh_watch_sharp_dict[i]
                     geometry = row['geometry']
-                    buildings_df_colors.loc[i] = [geometry, nw_sharp] 
+                    buildings_df_colors.loc[i] = [geometry, nw_sharp]
             fig, ax = plt.subplots(figsize=figsize)
             base = buildings_df.plot(ax=ax, color='gray', alpha=0.2)
             buildings_df_colors.plot(ax=base, column='nw_sharp', cmap=cm, vmin=0,
@@ -493,7 +517,7 @@ class Building():
         for i, node in enumerate(Glegend.nodes):
             poslegend[node] = np.array([0, i + 0.15])
 
-        plt.figure() 
+        plt.figure()
         nx.draw_networkx_nodes(Glegend, poslegend, node_color=colors,edgecolors='k')
         plt.axis('off')
         plt.xlim(-0.2, 3)
@@ -604,7 +628,7 @@ class Building():
         den = (sum(x)) ** 2
         H = num / den
         return H
-   
+
     def plot_neighborhood_watch_distribution(self, imgs_folder = ".temp", filename="neighborhood_watch_distribution" ,file_format='png', show=True, save=True):
         plt.rcParams.update({'font.size': 22})
         mpl.rc('text', usetex=True)
@@ -719,7 +743,7 @@ class Building():
                     nwv = wv/kv
                     if nwv > 1500:
                         count += 1
-                        
+
                     try:
                         D[count] += 1
                     except KeyError:
@@ -736,7 +760,7 @@ class Building():
             full.to_file(os.path.join(folder, "shapes", name + "merged_buildings") + ".shp")
         else:
             full = gpd.read_file(os.path.join(folder, "raw_data", "buildingsOSM") + ".shp")
-            full.to_file(os.path.join(folder, "shapes", name + "buildingsOSM") + ".shp")  
+            full.to_file(os.path.join(folder, "shapes", name + "buildingsOSM") + ".shp")
 
         minx, miny, maxx, maxy = full.total_bounds
         envelope = shapely.geometry.box(minx, miny, maxx, maxy)
@@ -749,6 +773,3 @@ class Building():
             empty_space.to_file(os.path.join(folder, "shapes", name + "merged_buildings") + "_empty.shp")
         else:
             empty_space.to_file(os.path.join(folder, "shapes", name + "buildingsOSM") + "_empty.shp")
-
-                    
-            
